@@ -1,0 +1,168 @@
+name: Automated Testing Suite
+
+on:
+  push:
+    branches: [ main, develop, staging ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: nok_kuwait_testing
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: xdebug
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Copy .env
+        run: |
+          cp .env.example .env || echo "APP_NAME='NOK Kuwait'
+          APP_ENV=testing
+          APP_KEY=
+          APP_DEBUG=true
+          APP_URL=http://localhost
+
+          DB_CONNECTION=mysql
+          DB_HOST=127.0.0.1
+          DB_PORT=3306
+          DB_DATABASE=nok_kuwait_testing
+          DB_USERNAME=root
+          DB_PASSWORD=password
+
+          CACHE_DRIVER=array
+          QUEUE_CONNECTION=sync
+          SESSION_DRIVER=array
+          MAIL_MAILER=array" > .env
+
+      - name: Generate application key
+        run: php artisan key:generate
+
+      - name: Create database
+        run: |
+          php artisan migrate:fresh --seed --force --env=testing
+
+      - name: Directory Permissions
+        run: chmod -R 777 storage bootstrap/cache
+
+      - name: Run Unit Tests
+        run: php artisan test --testsuite=Unit --parallel
+
+      - name: Run Feature Tests
+        run: php artisan test --testsuite=Feature --parallel
+
+      - name: Generate Test Coverage Report
+        run: vendor/bin/phpunit --coverage-html coverage --coverage-clover coverage.xml
+
+      - name: Upload Coverage to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage/
+
+      - name: Run Laravel Pint (Code Style)
+        run: vendor/bin/pint --test
+
+      - name: Check for Security Vulnerabilities
+        run: composer audit
+
+  browser-tests:
+    runs-on: ubuntu-latest
+    needs: tests
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: nok_kuwait_testing
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Install Chrome Driver
+        run: php artisan dusk:chrome-driver --detect
+
+      - name: Start Chrome Driver
+        run: ./vendor/laravel/dusk/bin/chromedriver-linux &
+
+      - name: Run Laravel Server
+        run: php artisan serve --no-reload &
+        env:
+          APP_ENV: testing
+
+      - name: Wait for server to be ready
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:8000; do sleep 1; done' || exit 1
+
+      - name: Run Dusk Tests
+        run: php artisan dusk --colors=always
+        env:
+          APP_URL: http://localhost:8000
+
+      - name: Upload Browser Test Screenshots
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dusk-screenshots
+          path: tests/Browser/screenshots/
+
+      - name: Upload Browser Test Logs
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dusk-logs
+          path: tests/Browser/console/
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [tests, browser-tests]
+    if: always()
+    
+    steps:
+      - name: Test Results Summary
+        run: |
+          echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Unit & Feature Tests**: ${{ needs.tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Browser Tests**: ${{ needs.browser-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
+
+
+
+

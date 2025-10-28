@@ -1,0 +1,601 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+@config 'tailwind.config.js';
+
+/* Custom Admin Panel Styling - Valex Theme */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* Force Dark Theme Always */
+html, html.dark, html.light {
+    color-scheme: dark !important;
+}
+
+/* Main Background - Dark Theme */
+body, body.dark, body.light {
+    background: #0f1419 !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Dashboard Page Background - Dark */
+.fi-page {
+    background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%) !important;
+}
+
+.fi-main {
+    background: transparent !important;
+}
+
+/* Force all containers to be dark */
+.fi-body {
+    background: #0f1419 !important;
+}
+
+/* Smooth Animations */
+* {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sidebar Styling - Dark Theme */
+.fi-sidebar {
+    background: linear-gradient(180deg, #1a1f2e 0%, #0f1419 100%) !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.fi-sidebar-item-button {
+    border-radius: 12px !important;
+    margin: 4px 8px !important;
+    padding: 12px 16px !important;
+    font-weight: 500 !important;
+}
+
+.fi-sidebar-item-button:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.fi-sidebar-item-button[aria-current="page"] {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+    transform: scale(1.02);
+}
+
+/* Brand Logo */
+.fi-sidebar-header {
+    padding: 24px 16px !important;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Stats Cards - Valex Style with Vibrant Gradients */
+.fi-wi-stats-overview-stat {
+    border-radius: 20px !important;
+    border: none !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    overflow: hidden;
+    position: relative;
+}
+
+.fi-wi-stats-overview-stat::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.1;
+    background: radial-gradient(circle at top right, rgba(255,255,255,0.8) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.fi-wi-stats-overview-stat:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Gradient Cards - Dark Theme Style */
+.stat-gradient-blue {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.25) !important;
+}
+
+.stat-gradient-blue * {
+    color: white !important;
+}
+
+/* Gradient Green - Active Members */
+.stat-gradient-green {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 8px 32px rgba(16, 185, 129, 0.25) !important;
+}
+
+.stat-gradient-green * {
+    color: white !important;
+}
+
+/* Gradient Gold/Yellow - Pending */
+.stat-gradient-orange {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    box-shadow: 0 8px 32px rgba(245, 158, 11, 0.25) !important;
+}
+
+.stat-gradient-orange * {
+    color: white !important;
+}
+
+/* Gradient Purple - Renewals */
+.stat-gradient-purple {
+    background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%) !important;
+    box-shadow: 0 8px 32px rgba(168, 85, 247, 0.25) !important;
+}
+
+.stat-gradient-purple * {
+    color: white !important;
+}
+
+/* Gradient Red/Pink - Pending Renewals */
+.stat-gradient-red {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.25) !important;
+}
+
+.stat-gradient-red * {
+    color: white !important;
+}
+
+/* Gradient Cyan - Enquiries */
+.stat-gradient-cyan {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+    box-shadow: 0 8px 32px rgba(6, 182, 212, 0.25) !important;
+}
+
+.stat-gradient-cyan * {
+    color: white !important;
+}
+
+.fi-wi-stats-overview-stat-value {
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    color: white !important;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    margin-bottom: 8px !important;
+}
+
+.fi-wi-stats-overview-stat-label {
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.fi-wi-stats-overview-stat-description {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 500;
+}
+
+.fi-wi-stats-overview-stat-icon {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Chart inside stats */
+.fi-wi-stats-overview-stat-chart {
+    opacity: 0.6;
+    filter: brightness(1.2);
+}
+
+/* Tables - Dark Theme */
+.fi-ta {
+    border-radius: 16px !important;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    background: rgba(26, 31, 46, 0.6) !important;
+    backdrop-filter: blur(10px);
+}
+
+.fi-ta-header-cell {
+    background: rgba(15, 20, 25, 0.8) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 16px 12px !important;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.3) !important;
+}
+
+.fi-ta-header-cell * {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.fi-ta-row {
+    transition: all 0.3s ease !important;
+    background: transparent !important;
+}
+
+.fi-ta-row:hover {
+    background: rgba(99, 102, 241, 0.1) !important;
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.fi-ta-cell {
+    color: rgba(255, 255, 255, 0.8) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Table content text color */
+.fi-ta-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Buttons - Valex Style */
+.fi-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35) !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    color: white !important;
+}
+
+.fi-btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5) !important;
+}
+
+.fi-btn-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+    box-shadow: 0 6px 20px rgba(17, 153, 142, 0.35) !important;
+    border-radius: 12px !important;
+}
+
+.fi-btn-success:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(17, 153, 142, 0.5) !important;
+}
+
+.fi-btn-danger {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+    box-shadow: 0 6px 20px rgba(250, 112, 154, 0.35) !important;
+    border-radius: 12px !important;
+}
+
+.fi-btn-danger:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(250, 112, 154, 0.5) !important;
+}
+
+.fi-btn-warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+    box-shadow: 0 6px 20px rgba(240, 147, 251, 0.35) !important;
+    border-radius: 12px !important;
+}
+
+.fi-btn-warning:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(240, 147, 251, 0.5) !important;
+}
+
+/* Badges */
+.fi-badge {
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+}
+
+.fi-badge-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+.fi-badge-danger {
+    background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
+    box-shadow: 0 2px 8px rgba(244, 63, 94, 0.3) !important;
+}
+
+.fi-badge-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Global Text Colors - Dark Theme */
+.fi-body, .fi-main, label, span, p, h1, h2, h3, h4, h5, h6 {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.fi-header-heading {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Forms - Dark Theme */
+.fi-input, .fi-input-wrp input, .fi-input-wrp textarea, .fi-input-wrp select {
+    border-radius: 10px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: rgba(15, 20, 25, 0.6) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    transition: all 0.3s ease !important;
+}
+
+.fi-input:focus, .fi-input-wrp input:focus, .fi-input-wrp textarea:focus, .fi-input-wrp select:focus {
+    border-color: rgba(99, 102, 241, 0.6) !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+    background: rgba(15, 20, 25, 0.8) !important;
+}
+
+.fi-fo-field-wrp-label {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.fi-fo-field-wrp-hint {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Cards - Dark Theme */
+.fi-section {
+    border-radius: 16px !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    background: rgba(26, 31, 46, 0.6) !important;
+    backdrop-filter: blur(10px);
+}
+
+.fi-section-header {
+    background: rgba(15, 20, 25, 0.5) !important;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.2) !important;
+    padding: 20px 24px !important;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+.fi-section-header-heading {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.fi-section-content {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.fi-section-description {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Dashboard Widgets - Dark Theme */
+.fi-wi {
+    border-radius: 16px !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+    background: rgba(26, 31, 46, 0.6) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.fi-wi-header {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Topbar - Dark Theme */
+.fi-topbar {
+    background: rgba(26, 31, 46, 0.8) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(10px);
+}
+
+/* Search */
+.fi-global-search-field {
+    border-radius: 12px !important;
+    border: 2px solid #e2e8f0 !important;
+}
+
+.fi-global-search-field:focus-within {
+    border-color: #10b981 !important;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Notifications */
+.fi-notification {
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Modals */
+.fi-modal {
+    border-radius: 20px !important;
+    overflow: hidden;
+}
+
+.fi-modal-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    padding: 24px !important;
+}
+
+/* Dropdown Menus */
+.fi-dropdown-list {
+    border-radius: 12px !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.fi-dropdown-list-item:hover {
+    background: #f0fdf4 !important;
+}
+
+/* Pagination */
+.fi-pagination {
+    border-radius: 12px !important;
+}
+
+.fi-pagination-item {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+}
+
+.fi-pagination-item[aria-current="page"] {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Loading States */
+.fi-loading-indicator {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+/* Action Buttons in Tables */
+.fi-ta-actions {
+    gap: 8px !important;
+}
+
+.fi-ta-icon-btn {
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+.fi-ta-icon-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Success Messages */
+.fi-notification-success {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+    border-left: 4px solid #10b981 !important;
+}
+
+/* Error Messages */
+.fi-notification-danger {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important;
+    border-left: 4px solid #f43f5e !important;
+}
+
+/* Info Messages */
+.fi-notification-info {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+    border-left: 4px solid #3b82f6 !important;
+}
+
+/* Warning Messages */
+.fi-notification-warning {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+    border-left: 4px solid #f59e0b !important;
+}
+
+/* Breadcrumbs */
+.fi-breadcrumbs {
+    font-weight: 500;
+    padding: 12px 0;
+}
+
+.fi-breadcrumbs-item {
+    color: #64748b;
+}
+
+.fi-breadcrumbs-item[aria-current="page"] {
+    color: #10b981;
+    font-weight: 600;
+}
+
+/* Dashboard Header */
+.fi-page-heading {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #1e293b 0%, #10b981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Empty States */
+.fi-ta-empty-state {
+    padding: 48px 24px !important;
+}
+
+.fi-ta-empty-state-heading {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: #64748b;
+}
+
+/* Tabs */
+.fi-tabs-item {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 600 !important;
+}
+
+.fi-tabs-item[aria-selected="true"] {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: white !important;
+}
+
+/* File Upload */
+.fi-fo-file-upload {
+    border-radius: 12px !important;
+    border: 2px dashed #cbd5e1 !important;
+    transition: all 0.3s ease !important;
+}
+
+.fi-fo-file-upload:hover {
+    border-color: #10b981 !important;
+    background: #f0fdf4 !important;
+}
+
+/* Toggle Switches */
+.fi-toggle {
+    border-radius: 999px !important;
+}
+
+.fi-toggle[aria-checked="true"] {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fi-section, .fi-wi, .fi-ta {
+    animation: slideIn 0.4s ease-out;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .fi-sidebar {
+        box-shadow: 0 0 24px rgba(0, 0, 0, 0.2);
+    }
+}

@@ -1,0 +1,44 @@
+.marque1 {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: middle;
+  max-width: 700px; /* adjust width as needed */
+}
+
+.marquee__inner {
+  display: inline-block;
+  padding-right: 100%;
+  --marquee-duration: 30s; /* slower scroll, increase value for even slower */
+  animation: marquee-rtl var(--marquee-duration) linear infinite;
+}
+
+.marquee__text {
+  display: inline-block;
+  padding-left: 3rem; /* gap between repeats */
+}
+
+@keyframes marquee-rtl {
+  0%   { transform: translateX(20%); }  /* start off-screen right */
+  100% { transform: translateX(-100%); } /* end off-screen left */
+}
+
+    .bg-overlay {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+}
+
+.bg-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6); /* adjust opacity (0.6 = 60% dark) */
+  z-index: 1;
+}
+
+/* Ensure inner content stays above overlay */
+.bg-overlay > * {
+  position: relative;
+  z-index: 2;
+}
