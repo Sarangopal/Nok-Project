@@ -172,8 +172,9 @@ class RegistrationsTable
                         if ($record->renewal_count === null) {
                             $record->renewal_count = 0;
                         }
-                        // Set card validity for the current calendar year (Jan–Dec)
-                        $record->card_valid_until = now()->endOfYear();
+                        // Set card validity to end of current calendar year (Dec 31)
+                        // This ensures all members must renew by year-end (Jan-Dec validity)
+                        $record->card_valid_until = $record->computeCalendarYearValidity();
 
                         $record->save();
 

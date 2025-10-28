@@ -41,15 +41,15 @@ class Registration extends Model
     protected static function booted(): void
     {
         static::saving(function (Registration $registration) {
-            // STRICT CALENDAR YEAR LOGIC:
-            // Only set if card_valid_until is not already set
-            // Always set to December 31 of CURRENT year (not based on any other date)
+            // Set card validity when first approved (new registration only)
+            // For renewals, expiry is handled in the approval action
             $isLoginApproved = $registration->login_status === 'approved';
-            $isRenewalApproved = $registration->renewal_status === 'approved';
             
-            if (($isLoginApproved || $isRenewalApproved) && !$registration->card_valid_until) {
-                // ALWAYS set to December 31 of CURRENT year
-                $registration->card_valid_until = now()->endOfYear();
+            // Only set expiry for NEW registrations (not renewals)
+            if ($isLoginApproved && !$registration->card_valid_until && $registration->renewal_count == 0) {
+                // Set to end of current calendar year (Dec 31)
+                // This ensures all members must renew by year-end (Jan-Dec validity)
+                $registration->card_valid_until = $registration->computeCalendarYearValidity();
             }
         });
     }

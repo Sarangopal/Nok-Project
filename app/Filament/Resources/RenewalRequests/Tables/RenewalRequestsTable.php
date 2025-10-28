@@ -86,8 +86,8 @@ class RenewalRequestsTable
                     ->requiresConfirmation()
                     ->modalHeading('Approve Renewal Request')
                     ->modalDescription(function ($record) {
-                        $currentYearEnd = now()->endOfYear()->format('M d, Y');
-                        return "This will set membership validity to {$currentYearEnd} (current calendar year).";
+                        $endOfYear = now()->endOfYear()->format('M d, Y');
+                        return "This will extend membership validity to end of current year: {$endOfYear}. Members must renew annually by Dec 31.";
                     })
                     ->visible(fn ($record) => $record->renewal_status === 'pending')
                     ->action(function ($record) {
@@ -96,10 +96,11 @@ class RenewalRequestsTable
                         $record->last_renewed_at = now();
                         $record->renewal_count = ($record->renewal_count ?? 0) + 1;
                         
-                        // STRICT CALENDAR YEAR LOGIC (Client Requirement):
-                        // ALL registrations/renewals are valid ONLY until Dec 31 of CURRENT year
-                        // Join/renew in ANY month → Valid until Dec 31 of that SAME year
-                        $record->card_valid_until = now()->endOfYear();
+                        // Set card validity to end of current calendar year (Dec 31)
+                        // This ensures all members must renew by year-end (Jan-Dec validity)
+                        // If approved in same year before expiry, extends to end of current year
+                        // If approved after expiry or in new year, extends to end of current year
+                        $record->card_valid_until = $record->computeCalendarYearValidity();
                         
                         $record->save();
                         
