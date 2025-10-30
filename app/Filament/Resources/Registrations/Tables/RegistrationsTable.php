@@ -17,6 +17,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Support\Facades\Mail;
 use Filament\Actions\ActionGroup;
+use Illuminate\Support\Str;
 
 
 
@@ -159,7 +160,7 @@ class RegistrationsTable
                         // Auto-generate password if missing (for member login)
                         $generatedPassword = null;
                         if (empty($record->password)) {
-                            $generatedPassword = 'NOK' . rand(1000, 9999); // Simple password: NOK1234
+                            $generatedPassword = Str::password(12); // Secure random password
                             $record->password = bcrypt($generatedPassword);
                         }
 
@@ -235,7 +236,7 @@ class RegistrationsTable
                     ->modalDescription('Generate a new password and email it to the member?')
                     ->visible(fn ($record) => $record->login_status === 'approved')
                     ->action(function ($record) {
-                        $newPassword = 'NOK' . rand(1000, 9999);
+                        $newPassword = Str::password(12);
                         $record->password = bcrypt($newPassword);
                         $record->save();
 

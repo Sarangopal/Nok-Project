@@ -2,10 +2,16 @@
 
 namespace App\Filament\Member\Pages\Auth;
 
+use App\Mail\MembershipCardMail;
+use App\Models\Member;
+use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Checkbox;
 use Filament\Schemas\Schema;
 use Filament\Auth\Pages\Login as BaseLogin;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class Login extends BaseLogin
@@ -51,4 +57,6 @@ class Login extends BaseLogin
             'data.civil_id' => __('These credentials do not match our records or your membership is not approved yet.'),
         ]);
     }
+
+    // No extra form actions here so the default Submit/Login button is displayed
 }

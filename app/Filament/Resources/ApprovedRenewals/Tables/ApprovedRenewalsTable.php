@@ -2,6 +2,11 @@
 
 namespace App\Filament\Resources\ApprovedRenewals\Tables;
 
+use Filament\Actions\Action;
+use App\Mail\MembershipCardMail;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Actions\ViewAction;
@@ -127,8 +132,35 @@ class ApprovedRenewalsTable
             ])
             ->defaultSort('last_renewed_at', 'desc')
             ->recordActions([
-                // ViewAction::make(),
-                // EditAction::make(),
+                Action::make('reset_password')
+                    ->label('Reset Password')
+                    ->icon('heroicon-o-key')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Reset Member Password')
+                    ->modalDescription('Generate a new password and email it to the member?')
+                    ->visible(fn ($record) => $record->renewal_status === 'approved')
+                    ->action(function ($record) {
+                        $newPassword = Str::password(12);
+                        $record->password = bcrypt($newPassword);
+                        $record->save();
+
+                        try {
+                            $mailData = ['record' => $record, 'password' => $newPassword];
+                            Mail::to($record->email)->send(new MembershipCardMail($mailData));
+                            Notification::make()
+                                ->title('Password Reset Successfully')
+                                ->body("New password sent to {$record->email}")
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('Password reset, but email failed')
+                                ->body('Error: ' . $e->getMessage())
+                                ->warning()
+                                ->send();
+                        }
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

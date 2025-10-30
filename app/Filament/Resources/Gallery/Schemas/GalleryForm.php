@@ -16,7 +16,6 @@ class GalleryForm
         return $schema
             ->components([
                 TextInput::make('title')
-                    ->required()
                     ->maxLength(255)
                     ->placeholder('Enter gallery item title')
                     ->columnSpanFull(),
@@ -27,15 +26,16 @@ class GalleryForm
                     ->placeholder('Optional description for this image')
                     ->columnSpanFull(),
                 
-                FileUpload::make('image')
-                    ->label('Image')
+                FileUpload::make('images')
+                    ->label('Images')
                     ->image()
-                    ->required()
+                    ->multiple()
+                    ->reorderable()
                     ->disk('public')  // Use public disk so files are accessible via storage link
                     ->directory('gallery')
                     ->maxSize(5120) // 5MB max
                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
-                    ->helperText('Upload an image (max 5MB). Recommended: 1200x800px or higher')
+                    ->helperText('Upload one or many images (max 5MB each). Recommended: 1200x800px or higher')
                     ->columnSpanFull(),
                 
                 Select::make('category')
