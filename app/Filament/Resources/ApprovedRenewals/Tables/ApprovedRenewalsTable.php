@@ -141,7 +141,7 @@ class ApprovedRenewalsTable
                     ->modalDescription('Generate a new password and email it to the member?')
                     ->visible(fn ($record) => $record->renewal_status === 'approved')
                     ->action(function ($record) {
-                        $newPassword = Str::password(12);
+                        $newPassword = 'NOK' . rand(100, 999) . chr(rand(65, 90)) . chr(rand(97, 122)) . '!'; // e.g. NOK789Cd!
                         $record->password = bcrypt($newPassword);
                         $record->save();
 

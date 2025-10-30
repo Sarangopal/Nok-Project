@@ -56,39 +56,25 @@ Our team will review your application and notify you once it's processed. 🕓
 {{-- =========================
      MEMBERSHIP DETAILS CARD
 ========================= --}}
+
+
 <x-mail::panel>
-<div style="background:#ffffff; border-radius:14px; box-shadow:0 3px 10px rgba(0,0,0,0.08); padding:25px; margin-bottom:30px;">
-    <h3 style="text-align:center; color:#004aad; margin-bottom:15px;">📋 Membership Summary</h3>
-    <table style="width:100%; border-collapse:collapse; font-size:15px; color:#333;">
-        <tbody>
-            <tr>
-                <td style="padding:8px 0;"><strong>🆔 NOK ID</strong></td>
-                <td style="text-align:right;">{{ $record->nok_id ?? 'N/A' }}</td>
-            </tr>
-            <tr>
-                <td style="padding:8px 0;"><strong>👤 Name</strong></td>
-                <td style="text-align:right;">{{ $record->memberName }}</td>
-            </tr>
-            <tr>
-                <td style="padding:8px 0;"><strong>📅 Date of Joining</strong></td>
-                <td style="text-align:right;">{{ $record->card_issued_at?->format('d-m-Y') ?? 'N/A' }}</td>
-            </tr>
-            <tr>
-                <td style="padding:8px 0;"><strong>📅 Expiry Date</strong></td>
-                <td style="text-align:right;">{{ $record->card_valid_until?->format('d-m-Y') ?? 'N/A' }}</td>
-            </tr>
-            
-            <tr>
-                <td style="padding:8px 0;"><strong>🔖 Status</strong></td>
-                <td style="text-align:right; text-transform:capitalize;">
-                    <span style="display:inline-block; background:#f2f2f2; padding:4px 10px; border-radius:6px; font-weight:600;">
-                        {{ $displayStatus }}
-                    </span>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+{!! 
+    '<div style="background:#ffffff; border-radius:14px; box-shadow:0 3px 10px rgba(0,0,0,0.08); padding:25px; margin-bottom:30px;">
+        <h3 style="text-align:center; color:#004aad; margin-bottom:15px;">📋 Membership Summary</h3>
+        <table style="width:100%; border-collapse:collapse; font-size:15px; color:#333;">
+            <tbody>
+                <tr><td style="padding:8px 0;"><strong>🆔 NOK ID</strong></td><td style="text-align:right;">'.$record->nok_id.'</td></tr>
+                <tr><td style="padding:8px 0;"><strong>👤 Name</strong></td><td style="text-align:right;">'.$record->memberName.'</td></tr>
+                <tr><td style="padding:8px 0;"><strong>📅 Date of Joining</strong></td><td style="text-align:right;">'.optional($record->card_issued_at)->format('d-m-Y').'</td></tr>
+                <tr><td style="padding:8px 0;"><strong>📅 Expiry Date</strong></td><td style="text-align:right;">'.optional($record->card_valid_until)->format('d-m-Y').'</td></tr>
+                <tr><td style="padding:8px 0;"><strong>🔖 Status</strong></td><td style="text-align:right; text-transform:capitalize;">
+                    <span style="display:inline-block; background:#f2f2f2; padding:4px 10px; border-radius:6px; font-weight:600;">'.$displayStatus.'</span>
+                </td></tr>
+            </tbody>
+        </table>
+    </div>'
+!!}
 </x-mail::panel>
 
 

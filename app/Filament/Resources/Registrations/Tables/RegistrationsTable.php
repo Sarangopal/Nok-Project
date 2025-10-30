@@ -160,7 +160,7 @@ class RegistrationsTable
                         // Auto-generate password if missing (for member login)
                         $generatedPassword = null;
                         if (empty($record->password)) {
-                            $generatedPassword = Str::password(12); // Secure random password
+                            $generatedPassword = 'NOK' . rand(100, 999) . chr(rand(65, 90)) . chr(rand(97, 122)) . '!'; // e.g. NOK123Xy!
                             $record->password = bcrypt($generatedPassword);
                         }
 
@@ -236,7 +236,7 @@ class RegistrationsTable
                     ->modalDescription('Generate a new password and email it to the member?')
                     ->visible(fn ($record) => $record->login_status === 'approved')
                     ->action(function ($record) {
-                        $newPassword = Str::password(12);
+                        $newPassword = 'NOK' . rand(100, 999) . chr(rand(65, 90)) . chr(rand(97, 122)) . '!'; // e.g. NOK456Ab!
                         $record->password = bcrypt($newPassword);
                         $record->save();
 

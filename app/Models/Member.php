@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Notifications\MemberResetPasswordNotification;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Contracts\Auth\CanResetPassword;
 
-class Member extends Authenticatable implements FilamentUser, HasName
+class Member extends Authenticatable implements FilamentUser, HasName, CanResetPassword
 {
     use Notifiable;
 
@@ -70,6 +72,17 @@ class Member extends Authenticatable implements FilamentUser, HasName
     public function getFilamentName(): string
     {
         return $this->memberName ?? $this->email ?? 'Member';
+    }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new MemberResetPasswordNotification($token));
     }
 }
 

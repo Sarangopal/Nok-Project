@@ -58,5 +58,15 @@ class Login extends BaseLogin
         ]);
     }
 
-    // No extra form actions here so the default Submit/Login button is displayed
+    protected function getFormActions(): array
+    {
+        return [
+            ...parent::getFormActions(),
+            Action::make('forgot_password')
+                ->label('Forgot password?')
+                ->url(route('member.password.request'))
+                ->color('gray')
+                ->link(),
+        ];
+    }
 }

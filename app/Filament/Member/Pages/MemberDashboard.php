@@ -47,34 +47,54 @@ class MemberDashboard extends BaseDashboard
                 ->label('Reset Password')
                 ->icon('heroicon-o-key')
                 ->color('warning')
-                ->requiresConfirmation()
-                ->modalHeading('Reset your password?')
-                ->modalDescription('A new secure password will be generated and emailed to you.')
-                ->action(function () {
+                ->modalHeading('Change Your Password')
+                ->modalDescription('Enter your current password and choose a new password.')
+                ->form([
+                    \Filament\Forms\Components\TextInput::make('current_password')
+                        ->label('Current Password')
+                        ->password()
+                        ->required()
+                        ->rules(['required']),
+                    
+                    \Filament\Forms\Components\TextInput::make('new_password')
+                        ->label('New Password')
+                        ->password()
+                        ->required()
+                        ->minLength(8)
+                        ->rules(['required', 'min:8'])
+                        ->helperText('Minimum 8 characters'),
+                    
+                    \Filament\Forms\Components\TextInput::make('new_password_confirmation')
+                        ->label('Confirm New Password')
+                        ->password()
+                        ->required()
+                        ->same('new_password')
+                        ->rules(['required'])
+                        ->helperText('Must match new password'),
+                ])
+                ->action(function (array $data) {
                     $member = Auth::guard('members')->user();
                     if (!$member) {
                         return;
                     }
 
-                    $newPassword = Str::password(12);
-                    $member->password = $newPassword;
+                    // Verify current password
+                    if (!\Illuminate\Support\Facades\Hash::check($data['current_password'], $member->password)) {
+                        Notification::make()
+                            ->title('Current password is incorrect')
+                            ->danger()
+                            ->send();
+                        return;
+                    }
+
+                    // Update password
+                    $member->password = $data['new_password'];
                     $member->save();
 
-                    try {
-                        $mailData = ['record' => $member, 'password' => $newPassword];
-                        Mail::to($member->email)->send(new MembershipCardMail($mailData));
-
-                        Notification::make()
-                            ->title('A new password was emailed to you')
-                            ->success()
-                            ->send();
-                    } catch (\Exception $e) {
-                        Notification::make()
-                            ->title('Password updated, but email failed')
-                            ->body('Error: ' . $e->getMessage())
-                            ->warning()
-                            ->send();
-                    }
+                    Notification::make()
+                        ->title('Password changed successfully')
+                        ->success()
+                        ->send();
                 }),
         ];
     }

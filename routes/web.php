@@ -15,6 +15,7 @@ use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\MembershipCardController;
 use App\Http\Controllers\MemberAuthController;
+use App\Http\Controllers\MemberPasswordResetController;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Http\Request;
 use App\Http\Controllers\VerificationController;
@@ -147,6 +148,16 @@ Route::get('/membership-card/download/{record}', [MembershipCardController::clas
 
 // Member panel is handled by Filament (MemberPanelProvider)
 // Access at: /member/panel
+
+// Member Password Reset Routes
+Route::get('/member/password/reset', [MemberPasswordResetController::class, 'showLinkRequestForm'])
+    ->name('member.password.request');
+Route::post('/member/password/email', [MemberPasswordResetController::class, 'sendResetLinkEmail'])
+    ->name('member.password.email');
+Route::get('/member/password/reset/{token}', [MemberPasswordResetController::class, 'showResetForm'])
+    ->name('member.password.reset');
+Route::post('/member/password/reset', [MemberPasswordResetController::class, 'reset'])
+    ->name('member.password.update');
 
 // Renewal request route (used by Filament member panel widget)
 Route::middleware('auth:members')->group(function () {
