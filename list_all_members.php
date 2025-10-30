@@ -52,3 +52,4 @@ echo "Total: " . App\Models\Registration::count() . " members\n";
 
 
 
+

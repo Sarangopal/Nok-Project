@@ -4,7 +4,7 @@
             💳 Membership Card
         </x-slot>
 
-        @if($member && $member->renewal_status === 'approved')
+        @if($member && ($member->login_status === 'approved' || $member->renewal_status === 'approved'))
             <div class="space-y-4">
                 @if($member->card_valid_until && $member->card_valid_until->isPast())
                     <div class="p-3 rounded-md border border-red-200 text-red-800 bg-red-50 dark:border-red-800 dark:text-red-200 dark:bg-red-900/20">
@@ -28,7 +28,7 @@
                     </x-filament::button>
                 </div>
             </div>
-        @elseif($member && $member->renewal_status !== 'approved')
+        @elseif($member && $member->login_status !== 'approved' && $member->renewal_status !== 'approved')
             <p class="text-sm text-gray-500 dark:text-gray-400">
                 Membership card will be available once your membership is approved.
             </p>

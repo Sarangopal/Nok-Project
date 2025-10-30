@@ -13,6 +13,8 @@ class ExpiringSoon extends BaseWidget
     protected static ?string $heading = 'Cards Expiring in 30 Days';
 
     protected int|string|array $columnSpan = 'full';
+       // ✅ Correct syntax for column span (optional)
+       protected static ?int $sort = 3;
 
     public function table(Tables\Table $table): Tables\Table
     {

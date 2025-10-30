@@ -24,7 +24,10 @@ class MembershipCard extends Widget
             return 'unknown';
         }
 
-        if ($member->renewal_status !== 'approved') {
+        // Check if member is approved (either login_status OR renewal_status)
+        $isApproved = $member->login_status === 'approved' || $member->renewal_status === 'approved';
+        
+        if (!$isApproved) {
             return 'pending';
         }
 

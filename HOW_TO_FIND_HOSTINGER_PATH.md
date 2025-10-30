@@ -339,3 +339,7 @@ Hostinger → Files → File Manager → Look at top bar → Copy path
 
 **That's your answer!** 🎉
 
+
+
+
+

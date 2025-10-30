@@ -121,6 +121,9 @@
                                     <p class="mt-2 text-xs text-green-600 dark:text-green-400">
                                         {{ $daysLeft }} days remaining
                                     </p>
+                                    <p class="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                                        <strong>Note:</strong> Renewal option will become available when your membership is within 30 days of expiry.
+                                    </p>
                                 @endif
                             </div>
                         </div>

@@ -44,11 +44,12 @@ class RenewalRequestResource extends Resource
         return 'warning';
     }
 
-    // Filter to only show member-requested renewals
+    // Filter to only show PENDING member-requested renewals
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
             ->whereNotNull('renewal_requested_at')
+            ->where('renewal_status', 'pending')  // Show only pending requests
             ->orderBy('renewal_requested_at', 'desc');
     }
 

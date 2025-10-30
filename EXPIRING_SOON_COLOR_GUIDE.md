@@ -269,3 +269,7 @@ $days = (int) now()->diffInDays($card_valid_until, false);
 **Updated on:** October 27, 2025  
 **Status:** All color issues fixed ✅
 
+
+
+
+

@@ -21,10 +21,20 @@ class MemberStatsWidget extends BaseWidget
         }
 
         $memberSince = $member->doj ? (is_string($member->doj) ? $member->doj : $member->doj->format('M d, Y')) : 'N/A';
-        $offersCount = $member->offers()->where('active', true)->count();
+        // $offersCount = $member->offers()->where('active', true)->count();
         $validUntil = $member->card_valid_until ? (is_string($member->card_valid_until) ? $member->card_valid_until : $member->card_valid_until->format('M d, Y')) : 'N/A';
         
-        $statusColor = match($member->renewal_status) {
+        // Determine combined status (login_status OR renewal_status)
+        $overallStatus = 'unknown';
+        if ($member->login_status === 'approved' || $member->renewal_status === 'approved') {
+            $overallStatus = 'approved';
+        } elseif ($member->login_status === 'pending' || $member->renewal_status === 'pending') {
+            $overallStatus = 'pending';
+        } elseif ($member->login_status === 'rejected' || $member->renewal_status === 'rejected') {
+            $overallStatus = 'rejected';
+        }
+        
+        $statusColor = match($overallStatus) {
             'approved' => 'success',
             'pending' => 'warning',
             'rejected' => 'danger',
@@ -32,7 +42,7 @@ class MemberStatsWidget extends BaseWidget
         };
 
         return [
-            Stat::make('Membership Status', ucfirst($member->renewal_status ?? 'Unknown'))
+            Stat::make('Membership Status', ucfirst($overallStatus))
                 ->description('Current status')
                 ->color($statusColor)
                 ->icon('heroicon-o-shield-check'),
@@ -42,10 +52,10 @@ class MemberStatsWidget extends BaseWidget
                 ->color('info')
                 ->icon('heroicon-o-calendar'),
             
-            Stat::make('Exclusive Offers', $offersCount)
-                ->description('Available to you')
-                ->color('warning')
-                ->icon('heroicon-o-gift'),
+            // Stat::make('Exclusive Offers', $offersCount)
+            //     ->description('Available to you')
+            //     ->color('warning')
+            //     ->icon('heroicon-o-gift'),
             
             Stat::make('Valid Until', $validUntil)
                 ->description('Card expiry')

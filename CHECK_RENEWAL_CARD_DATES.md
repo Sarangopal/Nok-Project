@@ -221,3 +221,7 @@ php artisan members:resend-cards --nok-id=NOK001006
 **Status:** ⚠️ Date calculation is correct, but card template could be improved  
 **Action Required:** Fix database + optionally improve card template
 
+
+
+
+

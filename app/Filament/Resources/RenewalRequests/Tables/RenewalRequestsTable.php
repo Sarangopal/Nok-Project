@@ -35,7 +35,7 @@ class RenewalRequestsTable
                 TextColumn::make('address')->searchable()
                     ->description(fn ($record) => 'Updated: ' . ($record->address ?? 'N/A'))
                     ->limit(30)
-                    ->tooltip(fn ($record) => $record->address),
+                    ->tooltip(fn ($record) => $record->address)->hidden(),
                 TextColumn::make('civil_id')->searchable()->label('Civil ID'),
                 
                 ImageColumn::make('renewal_payment_proof')
@@ -44,7 +44,7 @@ class RenewalRequestsTable
                     ->square()
                     ->defaultImageUrl(url('/images/no-image.png'))
                     ->extraImgAttributes(['loading' => 'lazy'])
-                    ->tooltip('Click to view full image'),
+                    ->tooltip('Click to view full image')->hidden(),
                 
                 TextColumn::make('renewal_requested_at')
                     ->label('Requested At')
@@ -86,8 +86,9 @@ class RenewalRequestsTable
                     ->requiresConfirmation()
                     ->modalHeading('Approve Renewal Request')
                     ->modalDescription(function ($record) {
-                        $endOfYear = now()->endOfYear()->format('M d, Y');
-                        return "This will extend membership validity to end of current year: {$endOfYear}. Members must renew annually by Dec 31.";
+                        $currentExpiry = $record->card_valid_until ? \Carbon\Carbon::parse($record->card_valid_until)->format('M d, Y') : 'N/A';
+                        $newExpiry = $record->card_valid_until ? \Carbon\Carbon::parse($record->card_valid_until)->addYear()->endOfYear()->format('M d, Y') : 'N/A';
+                        return "Current expiry: {$currentExpiry}. New expiry will be: {$newExpiry} (extended by 1 year).";
                     })
                     ->visible(fn ($record) => $record->renewal_status === 'pending')
                     ->action(function ($record) {
@@ -96,11 +97,10 @@ class RenewalRequestsTable
                         $record->last_renewed_at = now();
                         $record->renewal_count = ($record->renewal_count ?? 0) + 1;
                         
-                        // Set card validity to end of current calendar year (Dec 31)
-                        // This ensures all members must renew by year-end (Jan-Dec validity)
-                        // If approved in same year before expiry, extends to end of current year
-                        // If approved after expiry or in new year, extends to end of current year
-                        $record->card_valid_until = $record->computeCalendarYearValidity();
+                        // For RENEWALS: Extend card validity by 1 year from current expiry
+                        // Example: If current expiry is Dec 31, 2025 -> new expiry will be Dec 31, 2026
+                        // This ensures members get a full year extension when renewing
+                        $record->card_valid_until = $record->computeCalendarYearValidity(null, true);
                         
                         $record->save();
                         

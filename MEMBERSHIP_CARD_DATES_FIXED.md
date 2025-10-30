@@ -294,3 +294,7 @@ WHERE nok_id = 'NOK001006';
 **Card Template:** ✅ Updated to show renewal information clearly  
 **Action Required:** Run fix command for old wrong dates, then resend cards
 
+
+
+
+

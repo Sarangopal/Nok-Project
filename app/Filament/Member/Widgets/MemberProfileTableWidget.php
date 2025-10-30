@@ -70,14 +70,30 @@ class MemberProfileTableWidget extends BaseTableWidget
                     ->date('d M Y')
                     ->placeholder('N/A'),
 
-                BadgeColumn::make('renewal_status')
+                BadgeColumn::make('status')
                     ->label('Status')
+                    ->getStateUsing(function ($record) {
+                        // Show "Approved" if either login_status OR renewal_status is approved
+                        if ($record->login_status === 'approved' || $record->renewal_status === 'approved') {
+                            return 'approved';
+                        }
+                        // Show pending if either is pending
+                        if ($record->login_status === 'pending' || $record->renewal_status === 'pending') {
+                            return 'pending';
+                        }
+                        // Show rejected if either is rejected
+                        if ($record->login_status === 'rejected' || $record->renewal_status === 'rejected') {
+                            return 'rejected';
+                        }
+                        return 'unknown';
+                    })
                     ->colors([
                         'success' => 'approved',
                         'warning' => 'pending',
                         'danger' => 'rejected',
+                        'gray' => 'unknown',
                     ])
-                    ->formatStateUsing(fn ($state) => ucfirst($state ?? 'Unknown')),
+                    ->formatStateUsing(fn ($state) => ucfirst($state)),
             ])
             ->actions([
                 // Inline Edit Action

@@ -54,8 +54,15 @@ class Registration extends Model
         });
     }
 
-    public function computeCalendarYearValidity(?Carbon $baseDate = null): Carbon
+    public function computeCalendarYearValidity(?Carbon $baseDate = null, bool $isRenewal = false): Carbon
     {
+        if ($isRenewal && $this->card_valid_until) {
+            // For renewals, extend from current expiry date by 1 year
+            // If expired, extend from current expiry. If not expired, extend from current expiry.
+            return Carbon::parse($this->card_valid_until)->addYear()->endOfYear();
+        }
+        
+        // For new registrations, set to end of current year
         $date = $baseDate ?: ($this->last_renewed_at ?: ($this->card_issued_at ?: now()));
         return Carbon::parse($date)->endOfYear();
     }

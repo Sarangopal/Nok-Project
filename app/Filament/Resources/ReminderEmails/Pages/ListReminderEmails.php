@@ -14,42 +14,42 @@ class ListReminderEmails extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('send_reminders')
-                ->label('Send Reminders Now')
-                ->icon('heroicon-o-paper-airplane')
-                ->color('success')
-                ->requiresConfirmation()
-                ->modalHeading('Send Renewal Reminders')
-                ->modalDescription('This will send reminder emails to all members whose cards are expiring in 30, 15, 7, 1, or 0 days. Are you sure?')
-                ->modalSubmitActionLabel('Yes, Send Reminders')
-                ->action(function () {
-                    try {
-                        \Artisan::call('members:send-renewal-reminders');
-                        $output = \Artisan::output();
+            // Actions\Action::make('send_reminders')
+            //     ->label('Send Reminders Now')
+            //     ->icon('heroicon-o-paper-airplane')
+            //     ->color('success')
+            //     ->requiresConfirmation()
+            //     ->modalHeading('Send Renewal Reminders')
+            //     ->modalDescription('This will send reminder emails to all members whose cards are expiring in 30, 15, 7, 1, or 0 days. Are you sure?')
+            //     ->modalSubmitActionLabel('Yes, Send Reminders')
+            //     ->action(function () {
+            //         try {
+            //             \Artisan::call('members:send-renewal-reminders');
+            //             $output = \Artisan::output();
                         
-                        Notification::make()
-                            ->title('Reminders Sent Successfully')
-                            ->body($output)
-                            ->success()
-                            ->send();
-                    } catch (\Exception $e) {
-                        Notification::make()
-                            ->title('Error Sending Reminders')
-                            ->body($e->getMessage())
-                            ->danger()
-                            ->send();
-                    }
-                }),
+            //             Notification::make()
+            //                 ->title('Reminders Sent Successfully')
+            //                 ->body($output)
+            //                 ->success()
+            //                 ->send();
+            //         } catch (\Exception $e) {
+            //             Notification::make()
+            //                 ->title('Error Sending Reminders')
+            //                 ->body($e->getMessage())
+            //                 ->danger()
+            //                 ->send();
+            //         }
+            //     }),
 
-            Actions\Action::make('stats')
-                ->label('Statistics')
-                ->icon('heroicon-o-chart-bar')
-                ->color('info')
-                ->modalHeading('Reminder Email Statistics')
-                ->modalWidth('2xl')
-                ->modalContent(fn () => view('filament.modals.reminder-stats'))
-                ->modalSubmitAction(false)
-                ->modalCancelActionLabel('Close'),
+            // Actions\Action::make('stats')
+            //     ->label('Statistics')
+            //     ->icon('heroicon-o-chart-bar')
+            //     ->color('info')
+            //     ->modalHeading('Reminder Email Statistics')
+            //     ->modalWidth('2xl')
+            //     ->modalContent(fn () => view('filament.modals.reminder-stats'))
+            //     ->modalSubmitAction(false)
+            //     ->modalCancelActionLabel('Close'),
         ];
     }
 }

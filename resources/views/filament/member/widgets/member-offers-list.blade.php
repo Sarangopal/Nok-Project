@@ -4,7 +4,7 @@
             🎁 Exclusive Offers for Members
         </x-slot>
 
-        @if($member && $member->renewal_status === 'approved')
+        @if($member && ($member->login_status === 'approved' || $member->renewal_status === 'approved'))
             @if($offers && $offers->count() > 0)
                 <div class="space-y-3">
                     @foreach($offers as $offer)
@@ -54,9 +54,9 @@
                     </p>
                 </div>
             @endif
-        @elseif($member && $member->renewal_status !== 'approved')
+        @elseif($member && $member->login_status !== 'approved' && $member->renewal_status !== 'approved')
             <div class="p-3 rounded-md border border-yellow-200 text-yellow-800 bg-yellow-50 dark:border-yellow-800 dark:text-yellow-200 dark:bg-yellow-900/20">
-                Exclusive offers are available only for approved members. Your status: <strong>{{ ucfirst($member->renewal_status ?? 'pending') }}</strong>
+                Exclusive offers are available only for approved members. Your membership is pending approval.
             </div>
         @else
             <p class="text-sm text-gray-500 dark:text-gray-400">Please log in to view exclusive offers.</p>

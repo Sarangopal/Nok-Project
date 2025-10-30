@@ -9,6 +9,9 @@ use App\Models\ContactMessage;
 
 class StatsOverview extends StatsOverviewWidget
 {
+     // ✅ Correct syntax for column span (optional)
+     protected static ?int $sort = 1;
+
     protected function getStats(): array
     {
         $totalMembers = Registration::count();

@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\DB;
 class VerificationAttemptsChart extends ChartWidget
 {
     protected ?string $heading = 'Verification Attempts (14 days)';
+    
+    protected int|string|array $columnSpan = 'full';
+     // ✅ Correct syntax for column span (optional)
+     protected static ?int $sort = 4;
 
     protected function getType(): string
     {

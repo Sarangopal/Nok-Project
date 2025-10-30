@@ -11,6 +11,8 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class RecentRenewals extends BaseWidget
 {
     protected static ?string $heading = 'Recent Renewal Requests';
+     // ✅ Correct syntax for column span (optional)
+     protected static ?int $sort = 2;
 
     protected int|string|array $columnSpan = 'full';
 

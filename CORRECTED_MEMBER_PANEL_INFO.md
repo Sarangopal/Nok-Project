@@ -199,3 +199,7 @@ The Filament panel uses the same database tables:
 
 **Correct URL:** http://127.0.0.1:8000/member/panel
 
+
+
+
+

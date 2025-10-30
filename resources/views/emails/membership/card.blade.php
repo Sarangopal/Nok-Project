@@ -14,6 +14,11 @@
     $isRenewalApproved = $record->renewal_status === 'approved' && $record->last_renewed_at;
     $isRejected = in_array($record->login_status, ['rejected']) || in_array($record->renewal_status, ['rejected']);
     $isPending = in_array($record->login_status, ['pending']) || in_array($record->renewal_status, ['pending']);
+    
+    // Determine status for display in summary table
+    $displayStatus = $record->last_renewed_at 
+        ? ($record->renewal_status ?? 'pending') 
+        : ($record->login_status ?? 'pending');
 @endphp
 
 
@@ -76,14 +81,8 @@ Our team will review your application and notify you once it's processed. 🕓
             <tr>
                 <td style="padding:8px 0;"><strong>🔖 Status</strong></td>
                 <td style="text-align:right; text-transform:capitalize;">
-                    @php
-                        // Determine status based on new or renewal
-                        $status = $record->last_renewed_at 
-                            ? ($record->renewal_status ?? 'pending') 
-                            : ($record->login_status ?? 'pending');
-                    @endphp
                     <span style="display:inline-block; background:#f2f2f2; padding:4px 10px; border-radius:6px; font-weight:600;">
-                        {{ $status }}
+                        {{ $displayStatus }}
                     </span>
                 </td>
             </tr>

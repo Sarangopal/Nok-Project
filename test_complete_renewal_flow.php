@@ -178,3 +178,7 @@ if ($newMember && $newMemberExpiry === $expectedExpiry && $afterRenewal['card_va
 
 echo "\n=== END OF TEST ===\n";
 
+
+
+
+
