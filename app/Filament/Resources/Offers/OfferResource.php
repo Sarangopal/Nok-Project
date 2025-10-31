@@ -23,8 +23,9 @@ class OfferResource extends Resource
     protected static ?string $model = Offer::class;
     protected static ?string $navigationLabel = 'Offers & Discounts';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-gift';
-    protected static string|UnitEnum|null $navigationGroup = 'Marketing';
+    protected static string|UnitEnum|null $navigationGroup = null; // Hide from navigation
     protected static ?int $navigationSort = 6;
+    protected static bool $shouldRegisterNavigation = false; // Hide from sidebar
 
 
     public static function form(Schema $schema): Schema
