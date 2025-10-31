@@ -34,19 +34,22 @@
                     <div class="form-step active" id="step1">
                         <h2 class="form-title h4">Membership Details</h2>
 
-                        <!-- Toggle Section -->
+                        <!-- Toggle Section (Optional) -->
                         <div class="form-row" style="margin-bottom: 20px; display: flex; align-items: center; gap: 20px;">
                             <label class="switch">
-                                <input type="checkbox" id="memberSwitch" name="member_type" value="existing">
+                                <input type="checkbox" id="memberSwitch" name="member_type_checkbox" value="existing">
                                 <span class="slider round"></span>
                             </label>
                            
-                            <span style="color: #fff; font-weight: 600;" id="memberStatusText">Already Member</span>
+                            <span style="color: #fff; font-weight: 600;" id="memberStatusText">Already Member (Optional)</span>
                         </div>
+                        
+                        <!-- Hidden field for actual member_type value -->
+                        <input type="hidden" id="member_type" name="member_type" value="new">
 
                         <div class="form-row existing-member-fields" style="display: none; gap: 20px;">
                             <div class="form-group">
-                                <input type="text" placeholder="NOK ID Number" name="nok_id">
+                                <input type="text" placeholder="NOK ID Number (e.g., NOK001234)" name="nok_id">
                             </div>
                             <div class="form-group">
                                 <input type="date" placeholder="Date of Joining" name="doj">
@@ -55,10 +58,10 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <input type="text" placeholder="Name" name="memberName" required id="memberName">
+                                <input type="text" placeholder="Full Name *" name="memberName" required id="memberName">
                             </div>
                             <div class="form-group">
-                                <input type="number" placeholder="Age" name="age" required>
+                                <input type="number" placeholder="Age (18-100) *" name="age" required min="18" max="100">
                             </div>
                         </div>
 
@@ -70,16 +73,18 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <input type="email" placeholder="Email ID" name="email" required>
+                                <input type="email" placeholder="Email Address *" name="email" required>
                             </div>
                             <div class="form-group">
-                                <input type="text" placeholder="Mobile Number (Kuwait)" name="mobile" required>
+                                <input type="text" placeholder="Kuwait Mobile (+965XXXXXXXX) *" name="mobile" required pattern="^\+965[0-9]{8}$">
+                                <small style="color: #ddd; font-size: 11px;">Format: +965XXXXXXXX</small>
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <input type="text" placeholder="WhatsApp Number" name="whatsapp">
+                                <input type="text" placeholder="WhatsApp Number (+965XXXXXXXX)" name="whatsapp" pattern="^\+965[0-9]{8}$">
+                                <small style="color: #ddd; font-size: 11px;">Optional, format: +965XXXXXXXX</small>
                             </div>
                         </div>
 
@@ -109,10 +114,11 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <input type="text" placeholder="Passport Number" name="passport" required>
+                                <input type="text" placeholder="Passport Number *" name="passport" required>
                             </div>
                             <div class="form-group">
-                                <input type="text" placeholder="Civil ID Number" name="civil_id" required>
+                                <input type="text" placeholder="Civil ID (12 digits) *" name="civil_id" required pattern="[0-9]{12}" maxlength="12">
+                                <small style="color: #ddd; font-size: 11px;">Exactly 12 digits</small>
                             </div>
                         </div>
 
@@ -144,7 +150,8 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <input type="text" placeholder="Phone Number (India)" name="phone_india" required>
+                                <input type="text" placeholder="India Phone (+91XXXXXXXXXX) *" name="phone_india" required pattern="^\+91[0-9]{10}$">
+                                <small style="color: #ddd; font-size: 11px;">Format: +91XXXXXXXXXX (10 digits)</small>
                             </div>
                         </div>
 
@@ -262,22 +269,38 @@ let duplicateCheckTimers = {};
 
 // Check for duplicate in database via AJAX
 async function checkDuplicate(field, value) {
-    if (!value.trim()) return;
+    if (!value.trim()) return { exists: false };
     
     try {
+        // Create an AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        
         const response = await fetch("{{ route('registration.checkDuplicate') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
-            body: JSON.stringify({ field, value })
+            body: JSON.stringify({ field, value }),
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error('Duplicate check failed:', error);
+        if (error.name === 'AbortError') {
+            console.warn('Duplicate check timed out for', field);
+        } else {
+            console.error('Duplicate check failed:', error);
+        }
+        // Return false on error to allow submission (fail-open approach)
         return { exists: false };
     }
 }
@@ -427,7 +450,7 @@ document.querySelectorAll('.register-form input, .register-form select, .registe
             clearTimeout(duplicateCheckTimers[input.name]);
         }
         
-        // Debounce validation and duplicate checking (wait 500ms after user stops typing)
+        // Debounce validation and duplicate checking (wait 800ms after user stops typing)
         duplicateCheckTimers[input.name] = setTimeout(async () => {
             await validateInput(input);
             
@@ -437,7 +460,7 @@ document.querySelectorAll('.register-form input, .register-form select, .registe
                 const isStepValid = await checkStepValidityAsync(step);
                 nextBtn.disabled = !isStepValid;
             }
-        }, 500);
+        }, 800);
     });
     
     // Also validate on blur (when user leaves the field)
@@ -522,10 +545,10 @@ memberSwitch.addEventListener('change', function(){
         memberStatusText.textContent = "Already a Member";
         hiddenInput.value = "existing";
         existingFields.style.display = "flex";
-        // Make inputs required
-        existingFields.querySelectorAll('input').forEach(input => input.setAttribute('required','required'));
+        // NOK ID and DOJ are optional even when existing member
+        existingFields.querySelectorAll('input').forEach(input => input.removeAttribute('required'));
     } else {
-        memberStatusText.textContent = "New Member";
+        memberStatusText.textContent = "Already Member (Optional)";
         hiddenInput.value = "new";
         existingFields.style.display = "none";
         // Remove required attribute
