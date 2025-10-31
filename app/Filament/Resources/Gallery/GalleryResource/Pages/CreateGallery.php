@@ -20,33 +20,16 @@ class CreateGallery extends CreateRecord
     }
 
     /**
-     * Handle creation of multiple gallery records when multiple images are uploaded.
+     * Handle creation with auto image optimization
      */
     protected function handleRecordCreation(array $data): Model
     {
-        $images = Arr::pull($data, 'images', []);
-
-        // Fallback for single image field if present in old forms
-        if (empty($images) && isset($data['image'])) {
-            $images = [$data['image']];
-            unset($data['image']);
+        // Optimize image on disk before saving record
+        if (!empty($data['image']) && is_string($data['image'])) {
+            $this->optimizeUploadedImage($data['image']);
         }
 
-        $last = null;
-
-        foreach ($images as $path) {
-            // Optimize image on disk before saving record
-            if (is_string($path)) {
-                $this->optimizeUploadedImage($path);
-            }
-
-            $recordData = $data;
-            $recordData['image'] = $path;
-            $last = Gallery::create($recordData);
-        }
-
-        // Return the last created model to satisfy the contract
-        return $last ?? Gallery::create($data);
+        return parent::handleRecordCreation($data);
     }
 
     protected function optimizeUploadedImage(string $relativePath): void
@@ -54,10 +37,12 @@ class CreateGallery extends CreateRecord
         $disk = 'public';
         $fullPath = Storage::disk($disk)->path($relativePath);
 
-        try {
-            ImageOptimizer::optimize($fullPath);
-        } catch (\Throwable $e) {
-            // Silently continue; do not block creation if optimization fails
+        if (file_exists($fullPath)) {
+            try {
+                ImageOptimizer::optimize($fullPath);
+            } catch (\Throwable $e) {
+                // Silently continue; do not block creation if optimization fails
+            }
         }
     }
 }

@@ -26,17 +26,24 @@ class GalleryForm
                     ->placeholder('Optional description for this image')
                     ->columnSpanFull(),
                 
-                FileUpload::make('images')
-                    ->label('Images')
+                FileUpload::make('image')
+                    ->label('Image')
                     ->image()
-                    ->multiple()
-                    ->reorderable()
-                    ->disk('public')  // Use public disk so files are accessible via storage link
+                    ->disk('public')
                     ->directory('gallery')
                     ->maxSize(5120) // 5MB max
                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/jpg'])
-                    ->helperText('Upload one or many images (max 5MB each). Recommended: 1200x800px or higher')
-                    ->columnSpanFull(),
+                    ->helperText('Upload an image (max 5MB). Recommended: 1200x800px or higher. Image will be auto-optimized.')
+                    ->columnSpanFull()
+                    ->imageEditor()
+                    ->imageEditorAspectRatios([
+                        null,
+                        '16:9',
+                        '4:3',
+                        '1:1',
+                    ])
+                    ->imagePreviewHeight('250')
+                    ->fetchFileInformation(false), // Disable file size fetching to prevent loading issues
                 
                 Select::make('category')
                     ->required()
