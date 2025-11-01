@@ -86,6 +86,7 @@ class ReminderEmailsTable
 
                 BadgeColumn::make('status')
                     ->label('Status')
+                    ->formatStateUsing(fn (?string $state): string => $state ? ucfirst($state) : '')
                     ->colors([
                         'success' => 'sent',
                         'danger' => 'failed',

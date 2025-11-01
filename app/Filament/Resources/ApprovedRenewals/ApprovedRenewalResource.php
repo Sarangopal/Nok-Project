@@ -28,7 +28,7 @@ class ApprovedRenewalResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Memberships';
 
     // Navigation sort order
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     // Show badge with count
     public static function getNavigationBadge(): ?string

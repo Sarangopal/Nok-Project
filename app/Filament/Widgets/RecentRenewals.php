@@ -34,6 +34,7 @@ class RecentRenewals extends BaseWidget
                 TextColumn::make('email')->label('Email')->searchable(),
                 BadgeColumn::make('renewal_status')
                     ->label('Status')
+                    ->formatStateUsing(fn (?string $state): string => $state ? ucfirst($state) : '')
                     ->colors([
                         'warning' => 'pending',
                         'success' => 'approved',

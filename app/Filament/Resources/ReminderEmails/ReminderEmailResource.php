@@ -20,7 +20,7 @@ class ReminderEmailResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-envelope';
     protected static string|UnitEnum|null $navigationGroup = 'Memberships';
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
     {

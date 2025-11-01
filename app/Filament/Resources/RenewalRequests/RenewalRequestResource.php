@@ -28,7 +28,7 @@ class RenewalRequestResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'Memberships';
 
     // Navigation sort order
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 4;
 
     // Show badge with pending renewal request count
     public static function getNavigationBadge(): ?string

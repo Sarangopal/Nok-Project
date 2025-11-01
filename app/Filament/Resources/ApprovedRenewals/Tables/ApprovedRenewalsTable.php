@@ -112,6 +112,7 @@ class ApprovedRenewalsTable
                 
                 BadgeColumn::make('renewal_status')
                     ->label('Status')
+                    ->formatStateUsing(fn (?string $state): string => $state ? ucfirst($state) : '')
                     ->colors([
                         'success' => 'approved',
                         'warning' => 'pending',

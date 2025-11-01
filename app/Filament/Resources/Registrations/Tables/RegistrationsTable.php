@@ -97,6 +97,7 @@ class RegistrationsTable
                 TextColumn::make('login_status')
                     ->badge()
                     ->label('Login Status')
+                    ->formatStateUsing(fn (?string $state): string => $state ? ucfirst($state) : '')
                     ->colors([
                         'warning' => 'pending',
                         'success' => 'approved',
@@ -296,6 +297,6 @@ class RegistrationsTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ]) ->defaultSort('created_at', 'desc');
     }
 }
