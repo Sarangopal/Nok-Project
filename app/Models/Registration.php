@@ -57,14 +57,16 @@ class Registration extends Model
     public function computeCalendarYearValidity(?Carbon $baseDate = null, bool $isRenewal = false): Carbon
     {
         if ($isRenewal && $this->card_valid_until) {
-            // For renewals, extend from current expiry date by 1 year
-            // If expired, extend from current expiry. If not expired, extend from current expiry.
-            return Carbon::parse($this->card_valid_until)->addYear()->endOfYear();
+            // For renewals, extend to December 31 of the NEXT year
+            // Example: Expires Dec 31, 2024 → Renewed → New expiry: Dec 31, 2025
+            // Example: Expires Dec 31, 2025 → Renewed → New expiry: Dec 31, 2026
+            $currentExpiry = Carbon::parse($this->card_valid_until);
+            return $currentExpiry->addYear()->endOfYear();
         }
         
-        // For new registrations, set to end of current year
-        $date = $baseDate ?: ($this->last_renewed_at ?: ($this->card_issued_at ?: now()));
-        return Carbon::parse($date)->endOfYear();
+        // For new registrations, set to December 31 of the current calendar year
+        // This ensures all members get validity until Dec 31 of the current year
+        return now()->endOfYear();
     }
 
     public function offers(): BelongsToMany
