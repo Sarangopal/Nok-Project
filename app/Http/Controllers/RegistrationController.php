@@ -25,7 +25,50 @@ class RegistrationController extends Controller
     //     return view('membership-renewals'); // Blade file: resources/views/membership-renewals.blade.php
     // }
 
-    // API endpoint for checking duplicates
+    // API endpoint for checking email duplicates
+    public function checkEmail(Request $request)
+    {
+        $email = $request->input('email');
+        
+        if (!$email) {
+            return response()->json(['exists' => false]);
+        }
+        
+        // Use indexed query with cache for 10 seconds to reduce DB load
+        $cacheKey = "email_check_{$email}";
+        $exists = cache()->remember($cacheKey, 10, function () use ($email) {
+            return Registration::where('email', $email)->exists();
+        });
+        
+        return response()->json([
+            'exists' => $exists,
+            'message' => $exists ? "⚠️ This email is already registered." : ""
+        ]);
+    }
+
+    // API endpoint for checking phone duplicates
+    public function checkPhone(Request $request)
+    {
+        $phone = $request->input('phone');
+        $country = $request->input('country');
+        
+        if (!$phone) {
+            return response()->json(['exists' => false]);
+        }
+        
+        // Use indexed query with cache for 10 seconds to reduce DB load
+        $cacheKey = "phone_check_{$phone}_{$country}";
+        $exists = cache()->remember($cacheKey, 10, function () use ($phone) {
+            return Registration::where('mobile', $phone)->exists();
+        });
+        
+        return response()->json([
+            'exists' => $exists,
+            'message' => $exists ? "⚠️ This phone number is already registered." : ""
+        ]);
+    }
+
+    // API endpoint for checking duplicates (other fields)
     public function checkDuplicate(Request $request)
     {
         $field = $request->input('field');
@@ -37,7 +80,7 @@ class RegistrationController extends Controller
         }
         
         // Whitelist allowed fields to prevent SQL injection
-        $allowedFields = ['email', 'mobile', 'passport', 'civil_id'];
+        $allowedFields = ['passport', 'civil_id'];
         if (!in_array($field, $allowedFields)) {
             return response()->json(['exists' => false, 'error' => 'Invalid field']);
         }
@@ -57,16 +100,27 @@ class RegistrationController extends Controller
     public function submit(Request $request)
     {
         try {
+            // Use the full international numbers if provided by intl-tel-input
+            if ($request->filled('mobile_full')) {
+                $request->merge(['mobile' => $request->mobile_full]);
+            }
+            if ($request->filled('whatsapp_full')) {
+                $request->merge(['whatsapp' => $request->whatsapp_full]);
+            }
+            if ($request->filled('phone_india_full')) {
+                $request->merge(['phone_india' => $request->phone_india_full]);
+            }
+
             $validated = $request->validate([
                 'member_type' => 'nullable|in:new,existing',
                 'memberName' => 'required|string|max:255',
                 'age' => 'required|integer|min:18|max:100',
-                'gender' => 'required|string|in:Male,Female,Transgender',
+                'gender' => 'required|string|in:Male,Female,Others',
                 'email' => 'required|email|max:255|unique:registrations,email',
-                'mobile' => 'required|string|regex:/^\+965[0-9]{8}$/|unique:registrations,mobile',
-                'nok_id' => 'nullable|string|max:50',
-                'doj' => 'nullable|date|before_or_equal:today',
-                'whatsapp' => 'nullable|string|regex:/^\+965[0-9]{8}$/',
+                'mobile' => 'required|string|max:20|unique:registrations,mobile',
+                'nok_id' => 'required_if:member_type,existing|nullable|string|max:50',
+                'doj' => 'required_if:member_type,existing|nullable|date|before_or_equal:today',
+                'whatsapp' => 'nullable|string|max:20',
                 'department' => 'required|string|max:255',
                 'job_title' => 'required|string|max:255',
                 'institution' => 'required|string|max:255',
@@ -74,7 +128,7 @@ class RegistrationController extends Controller
                 'civil_id' => 'required|string|size:12|unique:registrations,civil_id',
                 'blood_group' => 'required|string|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
                 'address' => 'required|string|max:500',
-                'phone_india' => 'required|string|regex:/^\+91[0-9]{10}$/',
+                'phone_india' => 'required|string|max:20',
                 'nominee_name' => 'required|string|max:255',
                 'nominee_relation' => 'required|string|max:255',
                 'nominee_contact' => 'required|string|max:20',
@@ -85,9 +139,10 @@ class RegistrationController extends Controller
                 'ifsc_code' => 'nullable|string|max:20',
                 'bank_branch' => 'nullable|string|max:255',
             ], [
-                'mobile.regex' => 'Kuwait mobile number must be in format: +965XXXXXXXX (8 digits after +965)',
-                'whatsapp.regex' => 'WhatsApp number must be in format: +965XXXXXXXX (8 digits after +965)',
-                'phone_india.regex' => 'India phone must be in format: +91XXXXXXXXXX (10 digits after +91)',
+                'mobile.required' => 'Kuwait mobile number is required',
+                'mobile.unique' => 'This mobile number is already registered',
+                'email.unique' => 'This email is already registered',
+                'phone_india.required' => 'India phone number is required',
                 'civil_id.size' => 'Civil ID must be exactly 12 digits',
                 'age.min' => 'Age must be at least 18 years',
             ]);

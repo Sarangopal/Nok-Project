@@ -138,8 +138,20 @@ Route::fallback(function () {
 // Handle form submission
 Route::post('/registration-submit', [RegistrationController::class, 'submit'])->name('registration.submit');
 
-// Check for duplicate registrations (AJAX)
-Route::post('/check-duplicate', [RegistrationController::class, 'checkDuplicate'])->name('registration.checkDuplicate');
+// Check for duplicate email (AJAX with rate limiting)
+Route::post('/check-email', [RegistrationController::class, 'checkEmail'])
+    ->middleware('throttle:60,1')
+    ->name('registration.checkEmail');
+
+// Check for duplicate phone (AJAX with rate limiting)
+Route::post('/check-phone', [RegistrationController::class, 'checkPhone'])
+    ->middleware('throttle:60,1')
+    ->name('registration.checkPhone');
+
+// Check for duplicate registrations (AJAX - other fields)
+Route::post('/check-duplicate', [RegistrationController::class, 'checkDuplicate'])
+    ->middleware('throttle:60,1')
+    ->name('registration.checkDuplicate');
 
 // Route::get('/membership-card/download/{registration}', [MembershipCardController::class, 'download'])
 //     ->name('membership.card.download');

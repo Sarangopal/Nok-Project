@@ -68,23 +68,24 @@
                         <div class="form-row gender-row">
                             <label><input type="radio" name="gender" value="Male" required> Male</label>
                             <label><input type="radio" name="gender" value="Female"> Female</label>
-                            <label><input type="radio" name="gender" value="Transgender"> Transgender</label>
+                            <label><input type="radio" name="gender" value="Others"> Others</label>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <input type="email" placeholder="Email Address *" name="email" required>
+                                <input type="email" placeholder="Email Address *" name="email" required id="email">
                             </div>
                             <div class="form-group">
-                                <input type="text" placeholder="Kuwait Mobile (+965XXXXXXXX) *" name="mobile" required pattern="^\+965[0-9]{8}$">
-                                <small style="color: #ddd; font-size: 11px;">Format: +965XXXXXXXX</small>
+                                <input type="tel" placeholder="Kuwait Mobile *" name="mobile" required id="mobile">
+                                <input type="hidden" name="mobile_full" id="mobile_full">
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
-                                <input type="text" placeholder="WhatsApp Number (+965XXXXXXXX)" name="whatsapp" pattern="^\+965[0-9]{8}$">
-                                <small style="color: #ddd; font-size: 11px;">Optional, format: +965XXXXXXXX</small>
+                                <input type="tel" placeholder="WhatsApp Number" name="whatsapp" id="whatsapp">
+                                <input type="hidden" name="whatsapp_full" id="whatsapp_full">
+                                <small style="color: #ddd; font-size: 11px;">Include your country code for WhatsApp.</small>
                             </div>
                         </div>
 
@@ -150,8 +151,8 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <input type="text" placeholder="India Phone (+91XXXXXXXXXX) *" name="phone_india" required pattern="^\+91[0-9]{10}$">
-                                <small style="color: #ddd; font-size: 11px;">Format: +91XXXXXXXXXX (10 digits)</small>
+                                <input type="tel" placeholder="India Phone *" name="phone_india" required id="phone_india">
+                                <input type="hidden" name="phone_india_full" id="phone_india_full">
                             </div>
                         </div>
 
@@ -235,13 +236,58 @@
 
 
 <script>
+// Initialize intl-tel-input for phone fields
+let mobileInput, whatsappInput, phoneIndiaInput;
+let itiMobile, itiWhatsapp, itiPhoneIndia;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize mobile field (Kuwait default)
+    mobileInput = document.querySelector("#mobile");
+    itiMobile = window.intlTelInput(mobileInput, {
+        initialCountry: "kw",
+        preferredCountries: ["kw", "in"],
+        separateDialCode: true,
+        utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/utils.js"
+    });
+
+    // Initialize WhatsApp field (auto-detect)
+    whatsappInput = document.querySelector("#whatsapp");
+    itiWhatsapp = window.intlTelInput(whatsappInput, {
+        initialCountry: "kw",
+        preferredCountries: ["kw", "in"],
+        separateDialCode: true,
+        utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/utils.js"
+    });
+
+    // Initialize India phone field (India default)
+    phoneIndiaInput = document.querySelector("#phone_india");
+    itiPhoneIndia = window.intlTelInput(phoneIndiaInput, {
+        initialCountry: "in",
+        preferredCountries: ["in"],
+        separateDialCode: true,
+        utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/utils.js"
+    });
+
+    // Update hidden fields with full international number before form submission
+    const form = document.querySelector('.register-form');
+    form.addEventListener('submit', function() {
+        if (itiMobile.isValidNumber()) {
+            document.getElementById('mobile_full').value = itiMobile.getNumber();
+        }
+        if (whatsappInput.value && itiWhatsapp.isValidNumber()) {
+            document.getElementById('whatsapp_full').value = itiWhatsapp.getNumber();
+        }
+        if (itiPhoneIndia.isValidNumber()) {
+            document.getElementById('phone_india_full').value = itiPhoneIndia.getNumber();
+        }
+    });
+});
+
 // --- Regex rules for validation ---
 const regexRules = {
     memberName: /^[a-zA-Z\s]{2,50}$/,
     age: /^(1[89]|[2-6][0-9]|70)$/,
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-    mobile: /^(?:\+965)?[569]\d{7}$/,
-    whatsapp: /^(?:\+965)?[569]\d{7}$/,
     passport: /^[A-PR-WY][1-9]\d{5,7}$/,
     civil_id: /^\d{12}$/,
     nok_id: /^[a-zA-Z0-9]{4,20}$/,
@@ -251,30 +297,138 @@ const regexRules = {
     institution: /^[a-zA-Z0-9\s]{2,100}$/,
     blood_group: /^(A|B|AB|O)[+-]$/,
     address: /^.{5,250}$/,
-    phone_india: /^(?:\+91)?[6-9]\d{9}$/,
     nominee_name: /^[a-zA-Z\s]{2,50}$/,
     nominee_relation: /^[a-zA-Z\s]{2,30}$/,
-    nominee_contact: /^(?:\+91)?[6-9]\d{9}$/,
+    nominee_contact: /^.{5,20}$/,
     guardian_name: /^[a-zA-Z\s]{2,50}$/,
-    guardian_contact: /^(?:\+91)?[6-9]\d{9}$/,
+    guardian_contact: /^.{5,20}$/,
     bank_account_name: /^[a-zA-Z\s]{2,50}$/,
     account_number: /^\d{6,20}$/,
     ifsc_code: /^[A-Z]{4}0[A-Z0-9]{6}$/,
     bank_branch: /^.{2,100}$/
 };
 
+// Country-specific phone validation
+function validatePhoneByCountry(iti, fieldName) {
+    if (!iti) return { isValid: false, message: "Phone field not initialized" };
+    
+    const number = iti.getNumber();
+    const countryCode = iti.getSelectedCountryData().dialCode;
+    const nationalNumber = iti.getNumber(intlTelInputUtils.numberFormat.NATIONAL).replace(/\D/g, '');
+    
+    // Kuwait validation: 8 digits starting with 5, 6, or 9
+    if (countryCode === '965') {
+        if (nationalNumber.length !== 8) {
+            return { isValid: false, message: "Kuwait number must be 8 digits" };
+        }
+        if (!['5', '6', '9'].includes(nationalNumber[0])) {
+            return { isValid: false, message: "Kuwait number must start with 5, 6, or 9" };
+        }
+        return { isValid: true, message: "" };
+    }
+    
+    // India validation: 10 digits starting with 6-9
+    if (countryCode === '91') {
+        if (nationalNumber.length !== 10) {
+            return { isValid: false, message: "India number must be 10 digits" };
+        }
+        if (!['6', '7', '8', '9'].includes(nationalNumber[0])) {
+            return { isValid: false, message: "India number must start with 6-9" };
+        }
+        return { isValid: true, message: "" };
+    }
+    
+    // For other countries, use intl-tel-input's validation
+    if (!iti.isValidNumber()) {
+        return { isValid: false, message: "Invalid phone number for selected country" };
+    }
+    
+    return { isValid: true, message: "" };
+}
+
 // Fields to check for duplicates
 const duplicateCheckFields = ['email', 'mobile', 'passport', 'civil_id'];
 let duplicateCheckTimers = {};
 
-// Check for duplicate in database via AJAX
+// Check for duplicate email via AJAX
+async function checkEmailDuplicate(email) {
+    if (!email.trim()) return { exists: false };
+    
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const response = await fetch("{{ route('registration.checkEmail') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ email }),
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.warn('Email check timed out');
+        } else {
+            console.error('Email check failed:', error);
+        }
+        return { exists: false };
+    }
+}
+
+// Check for duplicate phone via AJAX
+async function checkPhoneDuplicate(phone, country) {
+    if (!phone.trim()) return { exists: false };
+    
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const response = await fetch("{{ route('registration.checkPhone') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ phone, country }),
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.warn('Phone check timed out');
+        } else {
+            console.error('Phone check failed:', error);
+        }
+        return { exists: false };
+    }
+}
+
+// Check for duplicate in database via AJAX (for other fields)
 async function checkDuplicate(field, value) {
     if (!value.trim()) return { exists: false };
     
     try {
-        // Create an AbortController for timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
         
         const response = await fetch("{{ route('registration.checkDuplicate') }}", {
             method: 'POST',
@@ -300,7 +454,6 @@ async function checkDuplicate(field, value) {
         } else {
             console.error('Duplicate check failed:', error);
         }
-        // Return false on error to allow submission (fail-open approach)
         return { exists: false };
     }
 }
@@ -321,8 +474,8 @@ async function validateInput(input) {
             return false;
         }
         
-        msgEl.textContent = "✓ Looks good!";
-        msgEl.style.color = "limegreen";
+        // Don't show any message for valid gender selection
+        msgEl.textContent = "";
         return true;
     }
     
@@ -332,32 +485,110 @@ async function validateInput(input) {
     const val = input.value.trim();
     let isValid = true, errorMsg = "";
 
-    if (input.hasAttribute("required") && !val) {
-        isValid = false;
-        errorMsg = "This field is required.";
-    } else if (regexRules[input.name]) {
-        isValid = regexRules[input.name].test(val);
-        if (!isValid) {
-            errorMsg = "Invalid " + input.name.replace("_", " ") + ".";
+    // Handle phone fields with intl-tel-input
+    if (input.id === 'mobile' && itiMobile) {
+        if (input.hasAttribute("required") && !val) {
+            isValid = false;
+            errorMsg = "This field is required.";
+        } else if (val) {
+            const phoneValidation = validatePhoneByCountry(itiMobile, 'mobile');
+            if (!phoneValidation.isValid) {
+                isValid = false;
+                errorMsg = phoneValidation.message;
+            } else {
+                // Check for duplicate phone
+                msgEl.textContent = "Checking...";
+                msgEl.style.color = "orange";
+                input.style.borderColor = "orange";
+                
+                const fullNumber = itiMobile.getNumber();
+                const country = itiMobile.getSelectedCountryData().iso2;
+                const duplicateResult = await checkPhoneDuplicate(fullNumber, country);
+                if (duplicateResult.exists) {
+                    isValid = false;
+                    errorMsg = "⚠️ This phone number is already registered.";
+                }
+            }
         }
-        
-        // Check for duplicates only if format is valid
-        if (isValid && duplicateCheckFields.includes(input.name)) {
+    } else if (input.id === 'whatsapp' && itiWhatsapp) {
+        if (val) {
+            const phoneValidation = validatePhoneByCountry(itiWhatsapp, 'whatsapp');
+            if (!phoneValidation.isValid) {
+                isValid = false;
+                errorMsg = phoneValidation.message;
+            }
+        }
+    } else if (input.id === 'phone_india' && itiPhoneIndia) {
+        if (input.hasAttribute("required") && !val) {
+            isValid = false;
+            errorMsg = "This field is required.";
+        } else if (val) {
+            const phoneValidation = validatePhoneByCountry(itiPhoneIndia, 'phone_india');
+            if (!phoneValidation.isValid) {
+                isValid = false;
+                errorMsg = phoneValidation.message;
+            }
+        }
+    } else if (input.id === 'email') {
+        // Handle email field
+        if (input.hasAttribute("required") && !val) {
+            isValid = false;
+            errorMsg = "This field is required.";
+        } else if (!regexRules.email.test(val)) {
+            isValid = false;
+            errorMsg = "Invalid email format.";
+        } else {
+            // Check for duplicate email
             msgEl.textContent = "Checking...";
             msgEl.style.color = "orange";
             input.style.borderColor = "orange";
             
-            const duplicateResult = await checkDuplicate(input.name, val);
+            const duplicateResult = await checkEmailDuplicate(val);
             if (duplicateResult.exists) {
                 isValid = false;
-                errorMsg = duplicateResult.message || "This value is already registered.";
+                errorMsg = "⚠️ This email is already registered.";
+            }
+        }
+    } else {
+        // Handle other fields
+        if (input.hasAttribute("required") && !val) {
+            isValid = false;
+            errorMsg = "This field is required.";
+        } else if (regexRules[input.name]) {
+            isValid = regexRules[input.name].test(val);
+            if (!isValid) {
+                errorMsg = "Invalid " + input.name.replace("_", " ") + ".";
+            }
+            
+            // Check for duplicates only if format is valid
+            if (isValid && duplicateCheckFields.includes(input.name)) {
+                msgEl.textContent = "Checking...";
+                msgEl.style.color = "orange";
+                input.style.borderColor = "orange";
+                
+                const duplicateResult = await checkDuplicate(input.name, val);
+                if (duplicateResult.exists) {
+                    isValid = false;
+                    errorMsg = duplicateResult.message || "This value is already registered.";
+                }
             }
         }
     }
 
     input.style.borderColor = isValid ? "green" : "red";
     msgEl.style.color = isValid ? "limegreen" : "red";
-    msgEl.textContent = isValid ? "✓ Looks good!" : "✗ " + errorMsg;
+    
+    // Don't show "Looks good!" for "Already a Member" fields (nok_id and doj) when valid
+    // But DO show error messages when they're required and invalid
+    if (input.name === 'nok_id' || input.name === 'doj') {
+        if (isValid) {
+            msgEl.textContent = ""; // No message when valid
+        } else {
+            msgEl.textContent = "✗ " + errorMsg; // Show error when invalid
+        }
+    } else {
+        msgEl.textContent = isValid ? "✓ Looks good!" : "✗ " + errorMsg;
+    }
 
     return isValid;
 }
@@ -427,8 +658,8 @@ document.querySelectorAll('.register-form input, .register-form select, .registe
         input.addEventListener("change", async function () {
             const msgEl = genderRow.querySelector('.validation-message');
             if (msgEl) {
-                msgEl.textContent = "✓ Looks good!";
-                msgEl.style.color = "limegreen";
+                // Don't show any message for valid gender selection
+                msgEl.textContent = "";
             }
         });
         return;
@@ -545,13 +776,13 @@ memberSwitch.addEventListener('change', function(){
         memberStatusText.textContent = "Already a Member";
         hiddenInput.value = "existing";
         existingFields.style.display = "flex";
-        // NOK ID and DOJ are optional even when existing member
-        existingFields.querySelectorAll('input').forEach(input => input.removeAttribute('required'));
+        // NOK ID and DOJ are REQUIRED when existing member
+        existingFields.querySelectorAll('input').forEach(input => input.setAttribute('required', 'required'));
     } else {
         memberStatusText.textContent = "Already Member (Optional)";
         hiddenInput.value = "new";
         existingFields.style.display = "none";
-        // Remove required attribute
+        // Remove required attribute when hidden
         existingFields.querySelectorAll('input').forEach(input => input.removeAttribute('required'));
     }
 });
@@ -559,6 +790,10 @@ memberSwitch.addEventListener('change', function(){
 
 </script>
 
+
+<!-- intl-tel-input CSS and JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/css/intlTelInput.css">
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@19.5.6/build/js/intlTelInput.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
@@ -659,6 +894,33 @@ document.querySelector('.register-form').addEventListener('submit', async functi
 
 
 <style>
+/* intl-tel-input styling */
+.iti {
+    width: 100%;
+}
+
+.iti__flag-container {
+    height: 100%;
+}
+
+.iti__selected-flag {
+    height: 100%;
+    padding: 0 8px;
+}
+
+.iti__country-list {
+    z-index: 999;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#mobile, #whatsapp, #phone_india {
+    width: 100%;
+    padding: 12px 12px 12px 52px !important;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 15px;
+}
+
 /* Progress Bar */
 .progress-container {
     position: relative;
