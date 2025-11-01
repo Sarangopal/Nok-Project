@@ -1,0 +1,14 @@
+.brand-style2{
+   .vs-container2{
+      padding: 80px 0;
+      background-color: #FAFAFA;
+      box-shadow: 0px 10px 35px 0px rgba(78, 111, 178, 0.1);
+      border-radius: 10px;
+      transform: translateY(-50%);
+   }
+}
+@include md{
+   .brand-style2 .vs-container2 {
+      transform: translateY(-30%);
+  }
+}
