@@ -73,70 +73,95 @@ class MemberProfileTableWidget extends BaseTableWidget
                 BadgeColumn::make('status')
                     ->label('Status')
                     ->getStateUsing(function ($record) {
-                        // Show "Approved" if either login_status OR renewal_status is approved
-                        if ($record->login_status === 'approved' || $record->renewal_status === 'approved') {
+                        // Prioritize renewal_status if there's a pending renewal request
+                        if ($record->renewal_requested_at && $record->renewal_status) {
+                            // If renewal is pending, show that
+                            if ($record->renewal_status === 'pending') {
+                                return 'renewal_pending';
+                            }
+                            // If renewal is approved, show approved
+                            if ($record->renewal_status === 'approved') {
+                                return 'approved';
+                            }
+                            // If renewal is rejected, show that
+                            if ($record->renewal_status === 'rejected') {
+                                return 'renewal_rejected';
+                            }
+                        }
+                        
+                        // Otherwise, show login_status
+                        if ($record->login_status === 'approved') {
                             return 'approved';
                         }
-                        // Show pending if either is pending
-                        if ($record->login_status === 'pending' || $record->renewal_status === 'pending') {
+                        if ($record->login_status === 'pending') {
                             return 'pending';
                         }
-                        // Show rejected if either is rejected
-                        if ($record->login_status === 'rejected' || $record->renewal_status === 'rejected') {
+                        if ($record->login_status === 'rejected') {
                             return 'rejected';
                         }
+                        
                         return 'unknown';
                     })
                     ->colors([
                         'success' => 'approved',
-                        'warning' => 'pending',
-                        'danger' => 'rejected',
+                        'warning' => fn ($state) => in_array($state, ['pending', 'renewal_pending']),
+                        'danger' => fn ($state) => in_array($state, ['rejected', 'renewal_rejected']),
                         'gray' => 'unknown',
                     ])
-                    ->formatStateUsing(fn ($state) => ucfirst($state)),
+                    ->formatStateUsing(function ($state) {
+                        return match($state) {
+                            'renewal_pending' => 'Renewal Pending',
+                            'renewal_rejected' => 'Renewal Rejected',
+                            'approved' => 'Approved',
+                            'pending' => 'Pending',
+                            'rejected' => 'Rejected',
+                            default => ucfirst($state),
+                        };
+                    }),
             ])
+            
             ->actions([
                 // Inline Edit Action
-                Action::make('edit')
-                    ->label('Edit')
-                    ->icon('heroicon-o-pencil')
-                    ->color('primary')
-                    ->form([
-                        TextInput::make('memberName')
-                            ->label('Full Name')
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('email')
-                            ->label('Email')
-                            ->email()
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('mobile')
-                            ->label('Mobile')
-                            ->tel()
-                            ->required()
-                            ->maxLength(20),
-                        Textarea::make('address')
-                            ->label('Address')
-                            ->rows(3)
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-                    ])
-                    ->fillForm(fn ($record): array => [
-                        'memberName' => $record->memberName,
-                        'email' => $record->email,
-                        'mobile' => $record->mobile,
-                        'address' => $record->address,
-                    ])
-                    ->action(function ($record, array $data): void {
-                        $record->update($data);
+                // Action::make('edit')
+                //     ->label('Edit')
+                //     ->icon('heroicon-o-pencil')
+                //     ->color('primary')
+                //     ->form([
+                //         TextInput::make('memberName')
+                //             ->label('Full Name')
+                //             ->required()
+                //             ->maxLength(255),
+                //         TextInput::make('email')
+                //             ->label('Email')
+                //             ->email()
+                //             ->required()
+                //             ->maxLength(255),
+                //         TextInput::make('mobile')
+                //             ->label('Mobile')
+                //             ->tel()
+                //             ->required()
+                //             ->maxLength(20),
+                //         Textarea::make('address')
+                //             ->label('Address')
+                //             ->rows(3)
+                //             ->maxLength(500)
+                //             ->columnSpanFull(),
+                //     ])
+                //     ->fillForm(fn ($record): array => [
+                //         'memberName' => $record->memberName,
+                //         'email' => $record->email,
+                //         'mobile' => $record->mobile,
+                //         'address' => $record->address,
+                //     ])
+                //     ->action(function ($record, array $data): void {
+                //         $record->update($data);
                         
-                        Notification::make()
-                            ->title('Profile Updated')
-                            ->body('Your profile has been updated successfully.')
-                            ->success()
-                            ->send();
-                    }),
+                //         Notification::make()
+                //             ->title('Profile Updated')
+                //             ->body('Your profile has been updated successfully.')
+                //             ->success()
+                //             ->send();
+                //     }),
 
                 // Request Renewal Action with Payment Proof
                 Action::make('requestRenewal')

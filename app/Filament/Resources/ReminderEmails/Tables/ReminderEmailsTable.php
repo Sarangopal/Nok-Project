@@ -67,13 +67,14 @@ class ReminderEmailsTable
                 BadgeColumn::make('days_before_expiry')
                     ->label('Reminder Type')
                     ->colors([
-                        'danger' => 0,
+                        'danger' => fn ($state) => in_array($state, [0, -1]),
                         'warning' => fn ($state) => in_array($state, [1, 7]),
                         'info' => 15,
                         'success' => 30,
                     ])
                     ->formatStateUsing(function ($state) {
-                        if ($state === 0) return 'Expired Today';
+                        if ($state === -1) return 'EXPIRED';
+                        if ($state === 0) return 'Expires Today';
                         if ($state === 1) return '1 Day Before';
                         return "{$state} Days Before";
                     })
@@ -115,11 +116,12 @@ class ReminderEmailsTable
                 SelectFilter::make('days_before_expiry')
                     ->label('Reminder Type')
                     ->options([
-                        '30' => '30 Days Before',
-                        '15' => '15 Days Before',
-                        '7' => '7 Days Before',
+                        '-1' => 'EXPIRED (Past Expiry)',
+                        '0' => 'Expires Today',
                         '1' => '1 Day Before',
-                        '0' => 'Expired Today',
+                        '7' => '7 Days Before',
+                        '15' => '15 Days Before',
+                        '30' => '30 Days Before',
                     ]),
 
                 SelectFilter::make('status')

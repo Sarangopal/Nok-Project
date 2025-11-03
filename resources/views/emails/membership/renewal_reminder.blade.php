@@ -10,7 +10,7 @@ This is a friendly reminder that your NOK membership card will expire soon.
 <x-mail::panel>
 ### ⚠️ Expiry Information
 
-- **Valid Until:** {{ $validUntil }}
+- **Valid Until:** {{ $card_valid_until }}
 @if($daysLeft > 0)
 - **Days Remaining:** {{ $daysLeft }} days
 @else

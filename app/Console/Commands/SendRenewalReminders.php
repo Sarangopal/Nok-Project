@@ -11,42 +11,69 @@ use Illuminate\Support\Carbon;
 
 class SendRenewalReminders extends Command
 {
-    protected $signature = 'members:send-renewal-reminders {--days=30,15,7,1,0}';
-    protected $description = 'Send renewal reminder emails to members approaching expiry';
+    protected $signature = 'members:send-renewal-reminders {--days=30,15,7,1,0,-1}';
+    protected $description = 'Send renewal reminder emails to members approaching expiry or already expired';
 
     public function handle(): int
     {
         $daysList = collect(explode(',', (string) $this->option('days')))
             ->map(fn ($d) => (int) trim($d))
-            // Include 0 so a final reminder is sent on the expiry day itself
-            ->filter(fn ($d) => $d >= 0)
+            // Include 0 for expiry day, -1 for expired cards
+            ->filter(fn ($d) => $d >= -1)
             ->unique()
             ->values();
 
-        $now = now();
+        $today = Carbon::today(); // Use Carbon::today() to get start of day (00:00:00)
         $totalSent = 0;
+        
+        $this->info("📅 Today's date: {$today->toDateString()}");
+        $this->info("🔔 Checking for reminders at: " . implode(', ', $daysList->toArray()) . " days before expiry\n");
 
         foreach ($daysList as $days) {
             if ($days === 0) {
-                // For expired cards, find ALL expired cards (past date)
+                // For 0 days: find cards expiring TODAY
                 $members = Registration::query()
                     ->where(function($query) {
                         $query->where('login_status', 'approved')
                               ->orWhere('renewal_status', 'approved');
                     })
-                    ->whereDate('card_valid_until', '<', $now->toDateString())
+                    ->whereDate('card_valid_until', '=', $today->toDateString())
+                    ->get();
+            } elseif ($days === -1) {
+                // Special case: Send reminders for ALL expired cards (cards past expiry date)
+                $members = Registration::query()
+                    ->where(function($query) {
+                        $query->where('login_status', 'approved')
+                              ->orWhere('renewal_status', 'approved');
+                    })
+                    ->whereDate('card_valid_until', '<', $today->toDateString())
                     ->get();
             } else {
-                // For future dates, find exact match
-                $targetDate = $now->copy()->addDays($days)->toDateString();
+                // For future dates, calculate exact difference using diffInDays
+                // Get all approved members with valid_until dates in the future
                 $members = Registration::query()
                     ->where(function($query) {
                         $query->where('login_status', 'approved')
                               ->orWhere('renewal_status', 'approved');
                     })
-                    ->whereDate('card_valid_until', '=', $targetDate)
-                    ->get();
+                    ->whereNotNull('card_valid_until')
+                    ->whereDate('card_valid_until', '>=', $today->toDateString())
+                    ->get()
+                    ->filter(function($member) use ($today, $days) {
+                        // Calculate the exact difference in days (signed)
+                        // Ensure both dates are at start of day for accurate comparison
+                        $validUntil = Carbon::parse($member->card_valid_until)->startOfDay();
+                        $todayStart = $today->copy()->startOfDay();
+                        $daysRemaining = (int) $todayStart->diffInDays($validUntil, false);
+                        
+                        // Only include if the difference matches exactly
+                        return $daysRemaining === $days;
+                    });
             }
+            
+            $reminderLabel = $days === -1 ? 'EXPIRED cards' : ($days === 0 ? 'expiring TODAY' : "{$days} day(s) before expiry");
+            $this->line("--- Checking {$reminderLabel} ---");
+            $this->line("Found " . $members->count() . " member(s)\n");
 
             foreach ($members as $member) {
                 // Check if reminder already sent to this member for this expiry date and days
@@ -75,7 +102,8 @@ class SendRenewalReminders extends Command
                         'status' => 'sent',
                     ]);
                     
-                    $this->info("✓ Sent to {$member->memberName} ({$member->email}) - {$days} days before expiry");
+                    $validDate = optional($member->card_valid_until)->toDateString() ?? 'N/A';
+                    $this->info("✓ Sent to {$member->memberName} ({$member->email}) - Expires: {$validDate} ({$days} days remaining)");
                 } catch (\Throwable $e) {
                     $this->error("Failed to send to {$member->email}: {$e->getMessage()}");
                     
@@ -93,7 +121,11 @@ class SendRenewalReminders extends Command
             }
         }
 
-        $this->info("Renewal reminders sent: {$totalSent}");
+        $this->newLine();
+        $this->info("═══════════════════════════════════════");
+        $this->info("✅ Total renewal reminders sent: {$totalSent}");
+        $this->info("═══════════════════════════════════════");
+        
         return self::SUCCESS;
     }
 }

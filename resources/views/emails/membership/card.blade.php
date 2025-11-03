@@ -86,7 +86,7 @@ Our team will review your application and notify you once it's processed. 🕓
 ### 🔐 Member Login Credentials
 
 You can now log in to the member portal at:  
-👉 [{{ url('/member/login') }}]({{ url('/member/login') }})
+👉 [{{ url('/member/panel/login') }}]({{ url('/member/panel/login') }})
 
 - **📧 Email:** {{ $record->email }}  
 - **🆔 Civil ID:** {{ $record->civil_id ?? 'N/A' }}  

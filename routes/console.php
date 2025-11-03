@@ -13,12 +13,13 @@ Artisan::command('inspire', function () {
  * │  AUTOMATIC RENEWAL REMINDER EMAILS                          │
  * ├─────────────────────────────────────────────────────────────┤
  * │  This command runs DAILY at 08:00 AM                        │
- * │  It sends reminder emails to members whose cards expire in: │
- * │  • 30 days before expiry                                    │
- * │  • 15 days before expiry                                    │
- * │  • 7 days before expiry                                     │
- * │  • 1 day before expiry                                      │
- * │  • On expiry day (0 days)                                   │
+ * │  It sends reminder emails to members whose cards:           │
+ * │  • Are expired (past expiry date)                           │
+ * │  • Expire in 30 days                                        │
+ * │  • Expire in 15 days                                        │
+ * │  • Expire in 7 days                                         │
+ * │  • Expire in 1 day                                          │
+ * │  • Expire today (0 days)                                    │
  * │                                                             │
  * │  ⚠️ IMPORTANT: Requires cron job setup on server!          │
  * │  See DEPLOYMENT_HOSTINGER.md for setup instructions        │

@@ -460,6 +460,11 @@ async function checkDuplicate(field, value) {
 
 // Validate individual input
 async function validateInput(input) {
+    // Skip validation for member_type fields (toggle button fields)
+    if (input.name === 'member_type' || input.name === 'member_type_checkbox') {
+        return true;
+    }
+    
     // Handle radio buttons differently
     if (input.type === 'radio') {
         const genderRow = input.closest('.gender-row');
@@ -575,18 +580,20 @@ async function validateInput(input) {
         }
     }
 
-    input.style.borderColor = isValid ? "green" : "red";
-    msgEl.style.color = isValid ? "limegreen" : "red";
-    
-    // Don't show "Looks good!" for "Already a Member" fields (nok_id and doj) when valid
+    // Don't show any validation feedback for "Already a Member" fields (nok_id and doj)
     // But DO show error messages when they're required and invalid
     if (input.name === 'nok_id' || input.name === 'doj') {
         if (isValid) {
             msgEl.textContent = ""; // No message when valid
+            input.style.borderColor = ""; // Reset border color
         } else {
             msgEl.textContent = "✗ " + errorMsg; // Show error when invalid
+            input.style.borderColor = "red";
+            msgEl.style.color = "red";
         }
     } else {
+        input.style.borderColor = isValid ? "green" : "red";
+        msgEl.style.color = isValid ? "limegreen" : "red";
         msgEl.textContent = isValid ? "✓ Looks good!" : "✗ " + errorMsg;
     }
 
@@ -640,6 +647,11 @@ function checkFormValidity() {
 
 // Add validation messages dynamically
 document.querySelectorAll('.register-form input, .register-form select, .register-form textarea').forEach(input => {
+    // Skip hidden member_type field (no validation message needed)
+    if (input.name === 'member_type' || input.name === 'member_type_checkbox') {
+        return;
+    }
+    
     // Skip radio buttons - they will be handled separately
     if (input.type === 'radio') {
         // Add validation message container to the parent row (only once)
@@ -675,6 +687,18 @@ document.querySelectorAll('.register-form input, .register-form select, .registe
         input.parentNode.appendChild(msgEl);
     }
 
+    // Validation function to be called on input and blur
+    const runValidation = async () => {
+        await validateInput(input);
+        
+        const step = input.closest(".form-step");
+        const nextBtn = step ? step.querySelector(".vs-btn.style5[type='button']") : null;
+        if (nextBtn) {
+            const isStepValid = await checkStepValidityAsync(step);
+            nextBtn.disabled = !isStepValid;
+        }
+    };
+
     input.addEventListener("input", function () {
         // Clear existing timer for this field
         if (duplicateCheckTimers[input.name]) {
@@ -682,21 +706,17 @@ document.querySelectorAll('.register-form input, .register-form select, .registe
         }
         
         // Debounce validation and duplicate checking (wait 800ms after user stops typing)
-        duplicateCheckTimers[input.name] = setTimeout(async () => {
-            await validateInput(input);
-            
-            const step = input.closest(".form-step");
-            const nextBtn = step ? step.querySelector(".vs-btn.style5[type='button']") : null;
-            if (nextBtn) {
-                const isStepValid = await checkStepValidityAsync(step);
-                nextBtn.disabled = !isStepValid;
-            }
-        }, 800);
+        duplicateCheckTimers[input.name] = setTimeout(runValidation, 800);
     });
     
     // Also validate on blur (when user leaves the field)
-    input.addEventListener("blur", async function () {
-        await validateInput(input);
+    input.addEventListener("blur", function () {
+        // Clear any pending debounced validation
+        if (duplicateCheckTimers[input.name]) {
+            clearTimeout(duplicateCheckTimers[input.name]);
+        }
+        // Run validation immediately on blur
+        runValidation();
     });
 });
 
@@ -767,23 +787,75 @@ const memberStatusText = document.getElementById('memberStatusText');
 const hiddenInput = document.querySelector('input[name="member_type"]');
 const existingFields = document.querySelector('.existing-member-fields');
 
-// Initialize toggle state
+// Remove any validation messages from member_type fields (they shouldn't have any)
+const memberTypeValidationMsg = hiddenInput?.parentNode?.querySelector('.validation-message');
+if (memberTypeValidationMsg) {
+    memberTypeValidationMsg.remove();
+}
+const memberSwitchValidationMsg = memberSwitch?.closest('.form-row')?.querySelector('.validation-message');
+if (memberSwitchValidationMsg) {
+    memberSwitchValidationMsg.remove();
+}
+
+// Initialize toggle state - ensure fields are hidden and cleared
 hiddenInput.value = "new";
 existingFields.style.display = "none";
 
-memberSwitch.addEventListener('change', function(){
+// Clear and reset existing member fields on page load
+existingFields.querySelectorAll('input').forEach(input => {
+    input.removeAttribute('required');
+    input.value = '';
+    
+    // Ensure validation message element exists for NOK ID and DOJ fields
+    if (!input.parentNode.querySelector('.validation-message')) {
+        const msgEl = document.createElement('span');
+        msgEl.className = 'validation-message';
+        msgEl.style.fontSize = '13px';
+        msgEl.style.display = 'block';
+        msgEl.style.marginTop = '5px';
+        input.parentNode.appendChild(msgEl);
+    }
+    
+    const msgEl = input.parentNode.querySelector('.validation-message');
+    if (msgEl) {
+        msgEl.textContent = '';
+    }
+    input.style.borderColor = '';
+});
+
+memberSwitch.addEventListener('change', async function(){
     if(this.checked){
         memberStatusText.textContent = "Already a Member";
         hiddenInput.value = "existing";
         existingFields.style.display = "flex";
         // NOK ID and DOJ are REQUIRED when existing member
-        existingFields.querySelectorAll('input').forEach(input => input.setAttribute('required', 'required'));
+        existingFields.querySelectorAll('input').forEach(input => {
+            input.setAttribute('required', 'required');
+        });
+        
+        // Trigger validation for both fields when they become visible and required
+        // This ensures "This field is required" shows immediately for empty fields
+        setTimeout(async () => {
+            for (const input of existingFields.querySelectorAll('input')) {
+                await validateInput(input);
+            }
+        }, 100);
     } else {
         memberStatusText.textContent = "Already Member (Optional)";
         hiddenInput.value = "new";
         existingFields.style.display = "none";
-        // Remove required attribute when hidden
-        existingFields.querySelectorAll('input').forEach(input => input.removeAttribute('required'));
+        // Remove required attribute and clear values when hidden
+        existingFields.querySelectorAll('input').forEach(input => {
+            input.removeAttribute('required');
+            input.value = ''; // Clear the field value
+            // Clear any validation messages
+            const msgEl = input.parentNode?.querySelector('.validation-message');
+            if (msgEl) {
+                msgEl.textContent = '';
+            }
+            // Reset border color
+            input.style.borderColor = '';
+        });
     }
 });
 
