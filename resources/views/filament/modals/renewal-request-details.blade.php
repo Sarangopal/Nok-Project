@@ -1,6 +1,6 @@
 <div style="padding: 1.5rem;">
     {{-- Payment Proof --}}
-    <div style="background-color: #eff6ff; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+    <div style="background-color: lightblue; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
         <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center;">
             <svg style="width: 1.25rem; height: 1.25rem; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -9,13 +9,13 @@
             💳 Payment Proof
         </h3>
         @if($record->renewal_payment_proof)
-            <div style="display: flex; justify-content: center;">
-                <a href="{{ asset('storage/' . $record->renewal_payment_proof) }}" target="_blank">
+            <div style="display: flex; justify-content: center; flex-direction: column; align-items: center;">
+                <a href="{{ asset('storage/' . $record->renewal_payment_proof) }}" target="_blank" style="text-decoration: none;">
                     <img src="{{ asset('storage/' . $record->renewal_payment_proof) }}" 
                          alt="Payment Proof" 
                          style="max-width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border: 2px solid #e5e7eb; cursor: pointer; max-height: 400px;">
-                    <p style="text-align: center; font-size: 0.875rem; color: #6b7280; margin-top: 0.75rem;">Click to view full size</p>
                 </a>
+                <p style="text-align: center; font-size: 0.875rem; color: #6b7280; margin-top: 0.75rem;">Click to view full size</p>
             </div>
         @else
             <div style="display: flex; align-items: center; justify-content: center; height: 10rem; background-color: #f3f4f6; border-radius: 0.5rem;">

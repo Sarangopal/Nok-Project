@@ -68,6 +68,27 @@ class RegistrationController extends Controller
         ]);
     }
 
+    // API endpoint for checking NOK ID duplicates
+    public function checkNokId(Request $request)
+    {
+        $nokId = $request->input('nok_id');
+        
+        if (!$nokId) {
+            return response()->json(['exists' => false]);
+        }
+        
+        // Use indexed query with cache for 10 seconds to reduce DB load
+        $cacheKey = "nok_id_check_{$nokId}";
+        $exists = cache()->remember($cacheKey, 10, function () use ($nokId) {
+            return Registration::where('nok_id', $nokId)->exists();
+        });
+        
+        return response()->json([
+            'exists' => $exists,
+            'message' => $exists ? "⚠️ This NOK ID already exists." : ""
+        ]);
+    }
+
     // API endpoint for checking duplicates (other fields)
     public function checkDuplicate(Request $request)
     {
@@ -118,7 +139,7 @@ class RegistrationController extends Controller
                 'gender' => 'required|string|in:Male,Female,Others',
                 'email' => 'required|email|max:255|unique:registrations,email',
                 'mobile' => 'required|string|max:20|unique:registrations,mobile',
-                'nok_id' => 'required_if:member_type,existing|nullable|string|max:50',
+                'nok_id' => 'required_if:member_type,existing|nullable|unique:registrations,nok_id|string|max:50',
                 'doj' => 'required_if:member_type,existing|nullable|date|before_or_equal:today',
                 'whatsapp' => 'nullable|string|max:20',
                 'department' => 'required|string|max:255',
@@ -142,6 +163,9 @@ class RegistrationController extends Controller
                 'mobile.required' => 'Kuwait mobile number is required',
                 'mobile.unique' => 'This mobile number is already registered',
                 'email.unique' => 'This email is already registered',
+                'nok_id.unique' => 'This NOK ID already exists',
+                'nok_id.required_if' => 'NOK ID is required',
+                'nok_id.exists' => 'This NOK ID already exists',
                 'phone_india.required' => 'India phone number is required',
                 'civil_id.size' => 'Civil ID must be exactly 12 digits',
                 'age.min' => 'Age must be at least 18 years',
@@ -200,7 +224,7 @@ class RegistrationController extends Controller
         'email'             => 'required|email|unique:registrations,email,' . $id, // ignore current email
         'mobile'            => 'required|string|max:15',
         'member_type'       => 'nullable|string',
-        'nok_id'            => 'nullable|string|max:50',
+        'nok_id'            => 'nullable|string|max:50|unique:registrations,nok_id',
         'doj'               => 'nullable|date',
         'whatsapp'          => 'nullable|string|max:15',
         'department'        => 'required|string|max:255',

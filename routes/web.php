@@ -148,6 +148,11 @@ Route::post('/check-phone', [RegistrationController::class, 'checkPhone'])
     ->middleware('throttle:60,1')
     ->name('registration.checkPhone');
 
+// Check for duplicate NOK ID (AJAX with rate limiting)
+Route::post('/check-nok-id', [RegistrationController::class, 'checkNokId'])
+    ->middleware('throttle:60,1')
+    ->name('registration.checkNokId');
+
 // Check for duplicate registrations (AJAX - other fields)
 Route::post('/check-duplicate', [RegistrationController::class, 'checkDuplicate'])
     ->middleware('throttle:60,1')

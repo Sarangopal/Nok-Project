@@ -347,7 +347,7 @@ function validatePhoneByCountry(iti, fieldName) {
 }
 
 // Fields to check for duplicates
-const duplicateCheckFields = ['email', 'mobile', 'passport', 'civil_id'];
+const duplicateCheckFields = ['email', 'mobile', 'passport', 'civil_id', 'nok_id'];
 let duplicateCheckTimers = {};
 
 // Check for duplicate email via AJAX
@@ -417,6 +417,42 @@ async function checkPhoneDuplicate(phone, country) {
             console.warn('Phone check timed out');
         } else {
             console.error('Phone check failed:', error);
+        }
+        return { exists: false };
+    }
+}
+
+// Check for duplicate NOK ID via AJAX
+async function checkNokIdDuplicate(nokId) {
+    if (!nokId.trim()) return { exists: false };
+    
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const response = await fetch("{{ route('registration.checkNokId') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ nok_id: nokId }),
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.warn('NOK ID check timed out');
+        } else {
+            console.error('NOK ID check failed:', error);
         }
         return { exists: false };
     }
@@ -554,6 +590,29 @@ async function validateInput(input) {
                 errorMsg = "⚠️ This email is already registered.";
             }
         }
+    } else if (input.name === 'nok_id') {
+        // Handle NOK ID field with live duplicate checking
+        if (input.hasAttribute("required") && !val) {
+            isValid = false;
+            errorMsg = "This field is required.";
+        } else if (val) {
+            // Check format first
+            if (regexRules.nok_id && !regexRules.nok_id.test(val)) {
+                isValid = false;
+                errorMsg = "Invalid NOK ID format.";
+            } else {
+                // Check for duplicate NOK ID
+                msgEl.textContent = "Checking...";
+                msgEl.style.color = "orange";
+                input.style.borderColor = "orange";
+                
+                const duplicateResult = await checkNokIdDuplicate(val);
+                if (duplicateResult.exists) {
+                    isValid = false;
+                    errorMsg = "⚠️ This NOK ID already exists.";
+                }
+            }
+        }
     } else {
         // Handle other fields
         if (input.hasAttribute("required") && !val) {
@@ -565,8 +624,8 @@ async function validateInput(input) {
                 errorMsg = "Invalid " + input.name.replace("_", " ") + ".";
             }
             
-            // Check for duplicates only if format is valid
-            if (isValid && duplicateCheckFields.includes(input.name)) {
+            // Check for duplicates only if format is valid (for other fields like passport, civil_id)
+            if (isValid && duplicateCheckFields.includes(input.name) && input.name !== 'nok_id') {
                 msgEl.textContent = "Checking...";
                 msgEl.style.color = "orange";
                 input.style.borderColor = "orange";
@@ -580,9 +639,19 @@ async function validateInput(input) {
         }
     }
 
-    // Don't show any validation feedback for "Already a Member" fields (nok_id and doj)
-    // But DO show error messages when they're required and invalid
-    if (input.name === 'nok_id' || input.name === 'doj') {
+    // Special handling for NOK ID - show errors but not success messages
+    if (input.name === 'nok_id') {
+        if (isValid) {
+            msgEl.textContent = ""; // No "Looks good!" message
+            input.style.borderColor = ""; // Reset border color
+        } else {
+            msgEl.textContent = "✗ " + errorMsg; // Show error message (including duplicate)
+            input.style.borderColor = "red";
+            msgEl.style.color = "red";
+        }
+    } 
+    // Don't show validation feedback for DOJ field
+    else if (input.name === 'doj') {
         if (isValid) {
             msgEl.textContent = ""; // No message when valid
             input.style.borderColor = ""; // Reset border color
@@ -592,6 +661,7 @@ async function validateInput(input) {
             msgEl.style.color = "red";
         }
     } else {
+        // All other fields show full validation feedback
         input.style.borderColor = isValid ? "green" : "red";
         msgEl.style.color = isValid ? "limegreen" : "red";
         msgEl.textContent = isValid ? "✓ Looks good!" : "✗ " + errorMsg;

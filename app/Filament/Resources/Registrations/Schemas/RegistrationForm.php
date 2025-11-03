@@ -51,13 +51,13 @@ class RegistrationForm
                 TextInput::make('ifsc_code'),
                 TextInput::make('bank_branch'),
                 DatePicker::make('card_valid_until')->label('Renewal Date')->native(false),
-                FileUpload::make('photo_path')
-                    ->label('Member Photo')
-                    ->image()
-                    ->directory('members/photos')
-                    ->disk('public')
-                    ->imageEditor()
-                    ->columnSpanFull(),
+                // FileUpload::make('photo_path')
+                //     ->label('Member Photo')
+                //     ->image()
+                //     ->directory('members/photos')
+                //     ->disk('public')
+                //     ->imageEditor()
+                //     ->columnSpanFull(),
             ]);
     }
 }
