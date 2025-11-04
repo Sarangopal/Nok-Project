@@ -233,6 +233,7 @@ class RegistrationsTable
                     ->label('Reset Password')
                     ->icon('heroicon-o-key')
                     ->color('warning')
+                    ->hidden()
                     ->requiresConfirmation()
                     ->modalHeading('Reset Member Password')
                     ->modalDescription('Generate a new password and email it to the member?')

@@ -10,6 +10,7 @@ use Filament\Tables\Columns\BadgeColumn;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction; // NEW ONE ADDED   
+use Filament\Actions\ActionGroup;
 use Filament\Notifications\Notification;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -25,7 +26,13 @@ class RenewalsTable
     {
         return $table
             ->columns([
-                TextColumn::make('member_type')->badge(),
+                BadgeColumn::make('member_type')
+                    ->label('Member Type')
+                    ->colors([
+                        'success' => 'new',        // Green for new members
+                        'info' => 'existing',      // Blue for existing members
+                    ])
+                    ->formatStateUsing(fn (?string $state): string => $state ? ucfirst($state) : 'N/A'),
                 TextColumn::make('nok_id')->searchable(),
                 TextColumn::make('doj')->date()->sortable(),
                 TextColumn::make('memberName')->searchable(),
@@ -113,7 +120,7 @@ class RenewalsTable
                         return 'Needs Renewal Request';
                     }),
                 BadgeColumn::make('card_valid_until')
-                ->label('Expiry Date')
+                ->label('Expiry Status')
                 ->color(function ($state) {
                     if (!$state) return null;
                     $days = (int) now()->diffInDays(Carbon::parse($state), false);
@@ -151,11 +158,18 @@ class RenewalsTable
                 ->action(fn () => null),
            ])
             ->recordActions([
-                // Only View, Edit, and Delete actions - No Approve/Reject here
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    // EditAction::make(),
+                    DeleteAction::make(),
+                ])
+            //     Action::makegroup('')
+            //     // Only View, Edit, and Delete actions - No Approve/Reject here
+            //     ViewAction::make(),
+            //     EditAction::make(),
+            //     DeleteAction::make(),
             ])
+           
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

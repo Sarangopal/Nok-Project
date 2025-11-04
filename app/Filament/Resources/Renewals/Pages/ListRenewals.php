@@ -13,7 +13,7 @@ class ListRenewals extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            // CreateAction::make(), // Hidden - Renewals are managed automatically
         ];
     }
 }
