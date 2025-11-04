@@ -144,14 +144,14 @@
                                         <li><a href="{{ url('/executive_committee') }}">Former Committees</a></li>
                                     </ul>
                                 </li>
-                                <li><a href="{{ url('/executive_committee_25_26') }}">Executive Committee 2025-2026</a></li>
+                                <li><a href="{{ url('/executive_committee_25_26') }}">Executive Committee</a></li>
                                 <li><a href="{{ url('/events') }}">Events</a></li>
                                 <li><a href="{{ url('/gallery') }}">Gallery</a></li>
                                 
                                 <li><a href="{{ url('/contact') }}">Contact</a></li>
                                 <li>
                                  <a href="{{ asset('pdfs/wings-of-nightingales-2025-09-24.pdf') }}" target="_blank" rel="noopener noreferrer">
-                                    Article
+                                    Brochure
                                 </a>
                                 </li>
                               

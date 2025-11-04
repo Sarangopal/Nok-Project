@@ -27,15 +27,40 @@ class RegistrationForm
                 TextInput::make('email')
                     ->label('Email address')
                     ->email()
-                    ->required(),
+                    ->required()
+                    ->unique(table: 'registrations', column: 'email', ignoreRecord: true)
+                    ->validationMessages([
+                        'unique' => '⚠️ This email is already registered in the system.',
+                    ])
+                    ->helperText('Must be unique - will check for duplicates'),
                 TextInput::make('mobile')
-                    ->required(),
-                TextInput::make('whatsapp'),
+                    ->required()
+                    ->unique(table: 'registrations', column: 'mobile', ignoreRecord: true)
+                    ->validationMessages([
+                        'unique' => '⚠️ This mobile number is already registered in the system.',
+                    ])
+                    ->helperText('Must be unique - will check for duplicates'),
+                TextInput::make('whatsapp')
+                    ->unique(table: 'registrations', column: 'whatsapp', ignoreRecord: true)
+                    ->validationMessages([
+                        'unique' => '⚠️ This WhatsApp number is already registered.',
+                    ]),
                 TextInput::make('department'),
                 TextInput::make('job_title'),
                 TextInput::make('institution'),
-                TextInput::make('passport'),
-                TextInput::make('civil_id'),
+                TextInput::make('passport')
+                    ->unique(table: 'registrations', column: 'passport', ignoreRecord: true)
+                    ->validationMessages([
+                        'unique' => '⚠️ This passport number is already registered in the system.',
+                    ])
+                    ->helperText('Must be unique if provided'),
+                TextInput::make('civil_id')
+                    ->required()
+                    ->unique(table: 'registrations', column: 'civil_id', ignoreRecord: true)
+                    ->validationMessages([
+                        'unique' => '⚠️ This Civil ID is already registered in the system.',
+                    ])
+                    ->helperText('Must be unique - will check for duplicates'),
                 TextInput::make('blood_group'),
                 Textarea::make('address')
                     ->columnSpanFull(),
