@@ -132,37 +132,37 @@ class ApprovedRenewalsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('last_renewed_at', 'desc')
-            ->recordActions([
-                Action::make('reset_password')
-                    ->label('Reset Password')
-                    ->icon('heroicon-o-key')
-                    ->color('warning')
-                    ->requiresConfirmation()
-                    ->modalHeading('Reset Member Password')
-                    ->modalDescription('Generate a new password and email it to the member?')
-                    ->visible(fn ($record) => $record->renewal_status === 'approved')
-                    ->action(function ($record) {
-                        $newPassword = 'NOK' . rand(100, 999) . chr(rand(65, 90)) . chr(rand(97, 122)) . '!'; // e.g. NOK789Cd!
-                        $record->password = bcrypt($newPassword);
-                        $record->save();
+            // ->recordActions([
+            //     Action::make('reset_password')
+            //         ->label('Reset Password')
+            //         ->icon('heroicon-o-key')
+            //         ->color('warning')
+            //         ->requiresConfirmation()
+            //         ->modalHeading('Reset Member Password')
+            //         ->modalDescription('Generate a new password and email it to the member?')
+            //         ->visible(fn ($record) => $record->renewal_status === 'approved')
+            //         ->action(function ($record) {
+            //             $newPassword = 'NOK' . rand(100, 999) . chr(rand(65, 90)) . chr(rand(97, 122)) . '!'; // e.g. NOK789Cd!
+            //             $record->password = bcrypt($newPassword);
+            //             $record->save();
 
-                        try {
-                            $mailData = ['record' => $record, 'password' => $newPassword];
-                            Mail::to($record->email)->send(new MembershipCardMail($mailData));
-                            Notification::make()
-                                ->title('Password Reset Successfully')
-                                ->body("New password sent to {$record->email}")
-                                ->success()
-                                ->send();
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title('Password reset, but email failed')
-                                ->body('Error: ' . $e->getMessage())
-                                ->warning()
-                                ->send();
-                        }
-                    }),
-            ])
+            //             try {
+            //                 $mailData = ['record' => $record, 'password' => $newPassword];
+            //                 Mail::to($record->email)->send(new MembershipCardMail($mailData));
+            //                 Notification::make()
+            //                     ->title('Password Reset Successfully')
+            //                     ->body("New password sent to {$record->email}")
+            //                     ->success()
+            //                     ->send();
+            //             } catch (\Exception $e) {
+            //                 Notification::make()
+            //                     ->title('Password reset, but email failed')
+            //                     ->body('Error: ' . $e->getMessage())
+            //                     ->warning()
+            //                     ->send();
+            //             }
+            //         }),
+            // ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
