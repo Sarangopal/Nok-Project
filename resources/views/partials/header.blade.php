@@ -149,6 +149,12 @@
                                 <li><a href="{{ url('/gallery') }}">Gallery</a></li>
                                 
                                 <li><a href="{{ url('/contact') }}">Contact</a></li>
+                                <li>
+                                 <a href="{{ asset('pdfs/wings-of-nightingales-2025-09-24.pdf') }}" target="_blank" rel="noopener noreferrer">
+                                    Article
+                                </a>
+                                </li>
+                              
                             </ul>
                         </nav>
                         <button class="vs-menu-toggle d-inline-block d-lg-none"><i class="fal fa-bars"></i></button>
@@ -158,6 +164,13 @@
                         <a href="{{ url('/registration') }}" class="vs-btn style3 ls-hero-btn">
                             <i class="fas fa-user" style="margin-right: 8px;"></i>
                             Register
+                            <i class="far fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ url('/verify-membership') }}" class="vs-btn style3 ls-hero-btn">
+                            <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+                            Verify
                             <i class="far fa-arrow-right"></i>
                         </a>
                     </div>

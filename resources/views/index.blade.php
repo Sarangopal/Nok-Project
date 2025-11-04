@@ -219,41 +219,42 @@
           <!-- Carousel Inner -->
           <div class="carousel-inner">
 
-            <!-- Carousel Item 1 -->
-            <div class="carousel-item active position-relative">
-              <div class="events-img-wrapper">
-                <img src="{{ asset('nokw/assets/img/event/nokkeve.jpeg') }}" class="events-img" alt="Event 1">
-                <div class="event-caption">
-                  <div class="caption-overlay"></div>
-                  <h5 class="event-title">AARAVAM 2025</h5>
-                  <p class="event-subtitle">September 26, 2025 • Aspire Bilingual School, Jleeb • 3 PM</p>
+            @forelse($events as $index => $event)
+              <!-- Dynamic Carousel Item {{ $index + 1 }} -->
+              <div class="carousel-item {{ $index === 0 ? 'active' : '' }} position-relative">
+                <div class="events-img-wrapper">
+                  <img src="{{ $event->banner_image ? asset('storage/' . $event->banner_image) : asset('nokw/assets/img/event/nokkeve.jpeg') }}" 
+                       class="events-img" 
+                       alt="{{ $event->title }}">
+                  <div class="event-caption">
+                    <div class="caption-overlay"></div>
+                    <h5 class="event-title">{{ $event->title }}</h5>
+                    <p class="event-subtitle">
+                      {{ $event->event_date ? $event->event_date->format('F d, Y') : 'Date TBA' }}
+                      @if($event->location)
+                        • {{ $event->location }}
+                      @endif
+                      @if($event->event_time)
+                        • {{ $event->event_time }}
+                      @endif
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            @empty
+              <!-- Fallback: No events available -->
+              <div class="carousel-item active position-relative">
+                <div class="events-img-wrapper">
+                  <img src="{{ asset('nokw/assets/img/event/nokkeve.jpeg') }}" class="events-img" alt="Default Event">
+                  <div class="event-caption">
+                    <div class="caption-overlay"></div>
+                    <h5 class="event-title">AARAVAM 2025</h5>
+                    <p class="event-subtitle">September 26, 2025 • Aspire Bilingual School, Jleeb • 3 PM</p>
+                  </div>
+                </div>
+              </div>
+            @endforelse
 
-            <!-- Carousel Item 2 -->
-            <div class="carousel-item position-relative">
-              <div class="events-img-wrapper">
-                <img src="{{ asset('nokw/assets/img/event/nokkeve.jpeg') }}" class="events-img" alt="Event 2">
-                <div class="event-caption">
-                  <div class="caption-overlay"></div>
-                  <h5 class="event-title">Another Event</h5>
-                  <p class="event-subtitle">Coming Soon • Stay Tuned</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Carousel Item 3 -->
-            <div class="carousel-item position-relative">
-              <div class="events-img-wrapper">
-                <img src="{{ asset('nokw/assets/img/event/nokkeve.jpeg') }}" class="events-img" alt="Event 3">
-                <div class="event-caption">
-                  <div class="caption-overlay"></div>
-                  <h5 class="event-title">Future Gathering</h5>
-                  <p class="event-subtitle">Details to be announced</p>
-                </div>
-              </div>
-            </div>
           </div>
 
           <!-- Controls -->

@@ -58,6 +58,12 @@ class EventResource extends Resource
             TextColumn::make('category')
                 ->badge()
                 ->toggleable(),
+            TextColumn::make('display_order')
+                ->label('Order')
+                ->sortable()
+                ->alignCenter()
+                ->badge()
+                ->color('info'),
             BooleanColumn::make('is_published')
                 ->label('Published')
                 ->sortable(),
@@ -76,7 +82,7 @@ class EventResource extends Resource
         ->bulkActions([
             DeleteBulkAction::make(),
         ])
-        ->defaultSort('event_date', 'desc');
+        ->defaultSort('display_order', 'asc');
     }
 
     public static function getPages(): array

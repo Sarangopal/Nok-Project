@@ -113,6 +113,18 @@ class EventForm
                 ->helperText('Show on homepage and highlighted sections')
                 ->default(false),
             
+            TextInput::make('display_order')
+                ->label('Display Order')
+                ->numeric()
+                ->default(0)
+                ->unique(table: 'events', column: 'display_order', ignoreRecord: true)
+                ->helperText('Lower numbers appear first. Each event must have a unique order number.')
+                ->minValue(0)
+                ->maxValue(9999)
+                ->validationMessages([
+                    'unique' => 'This order number is already in use by another event. Please choose a different number.',
+                ]),
+            
             TextInput::make('meta_description')
                 ->maxLength(160)
                 ->helperText('SEO meta description (max 160 chars)')

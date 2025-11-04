@@ -22,6 +22,7 @@ class Event extends Model
         'category',
         'is_published',
         'featured',
+        'display_order',
         'meta_description',
     ];
 
@@ -60,7 +61,7 @@ class Event extends Model
     // Scope for upcoming events
     public function scopeUpcoming($query)
     {
-        return $query->where('event_date', '>=', now())->orderBy('event_date', 'asc');
+        return $query->where('event_date', '>=', now());
     }
 
     // Scope for past events
@@ -73,6 +74,12 @@ class Event extends Model
     public function scopeFeatured($query)
     {
         return $query->where('featured', true);
+    }
+
+    // Scope for ordering by display order
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('display_order', 'asc')->orderBy('event_date', 'asc');
     }
 }
 

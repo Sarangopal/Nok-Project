@@ -23,7 +23,14 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\GalleryController;
 
 Route::get('/', function () {
-    return view('index');
+    // Fetch upcoming published events (max 5 for carousel) ordered by display_order
+    $events = \App\Models\Event::published()
+        ->upcoming()
+        ->ordered()
+        ->limit(5)
+        ->get();
+    
+    return view('index', compact('events'));
 });
 
 // Public membership verification (rate limited to prevent abuse)
