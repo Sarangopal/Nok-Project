@@ -264,21 +264,28 @@ class RegistrationsTable
                     ->color('info')
                     ->requiresConfirmation()
                     ->modalHeading('Resend Login Credentials')
-                    ->modalDescription('Send membership card with current login details to member email?')
+                    ->modalDescription('This will generate a NEW password and send the login credentials to the member\'s email. The old password will no longer work. Continue?')
+                    ->modalSubmitActionLabel('Yes, Generate & Send')
                     ->visible(fn ($record) => $record->login_status === 'approved' && !empty($record->password))
                     ->action(function ($record) {
                         try {
-                            // Note: Won't include password in email since we can't decrypt it
-                            // Use reset password instead to generate new one
-                            Mail::to($record->email)->send(new MembershipCardMail($record));
+                            // Generate a new password since we can't decrypt the existing one
+                            $newPassword = 'NOK' . rand(100, 999) . chr(rand(65, 90)) . chr(rand(97, 122)) . '!'; // e.g. NOK456Ab!
+                            $record->password = bcrypt($newPassword);
+                            $record->save();
+
+                            // Send membership card with new password
+                            $mailData = ['record' => $record, 'password' => $newPassword];
+                            Mail::to($record->email)->send(new MembershipCardMail($mailData));
+                            
                             Notification::make()
-                                ->title('Email Sent Successfully')
-                                ->body("Membership card sent to {$record->email}")
+                                ->title('Credentials Sent Successfully')
+                                ->body("New login credentials have been sent to {$record->email}")
                                 ->success()
                                 ->send();
                         } catch (\Exception $e) {
                             Notification::make()
-                                ->title('Failed to send email')
+                                ->title('Failed to send credentials')
                                 ->body('Error: ' . $e->getMessage())
                                 ->danger()
                                 ->send();

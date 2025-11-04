@@ -79,20 +79,28 @@ Our team will review your application and notify you once it's processed. 🕓
 
 
 {{-- =========================
-     LOGIN CREDENTIALS (FOR NEW APPROVAL)
+     LOGIN CREDENTIALS (FOR NEW APPROVAL OR RESEND)
 ========================= --}}
-@if(!empty($password) && $isNewApproved)
+@if(!empty($password))
 <x-mail::panel>
 ### 🔐 Member Login Credentials
 
+@if($isNewApproved)
 You can now log in to the member portal at:  
+@else
+Your login credentials have been reset. You can log in to the member portal at:  
+@endif
 👉 [{{ url('/member/panel/login') }}]({{ url('/member/panel/login') }})
 
 - **📧 Email:** {{ $record->email }}  
 - **🆔 Civil ID:** {{ $record->civil_id ?? 'N/A' }}  
 - **🔑 Password:** `{{ $password }}`  
 
+@if($isNewApproved)
 Please keep this information secure and **change your password** after your first login.
+@else
+This is your **new password**. The old password will no longer work. Please keep this secure.
+@endif
 </x-mail::panel>
 @endif
 
