@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Registrations\Tables;
 
 use Filament\Actions\Action;
 use App\Mail\MembershipCardMail;
+use App\Mail\ResendCredentialsMail;
 use App\Models\Registration;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -274,9 +275,8 @@ class RegistrationsTable
                             $record->password = bcrypt($newPassword);
                             $record->save();
 
-                            // Send membership card with new password
-                            $mailData = ['record' => $record, 'password' => $newPassword];
-                            Mail::to($record->email)->send(new MembershipCardMail($mailData));
+                            // Send dedicated credentials reset email (NOT membership card email)
+                            Mail::to($record->email)->send(new ResendCredentialsMail($record, $newPassword));
                             
                             Notification::make()
                                 ->title('Credentials Sent Successfully')

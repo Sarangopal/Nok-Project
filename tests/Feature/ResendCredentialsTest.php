@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Mail\MembershipCardMail;
+use App\Mail\ResendCredentialsMail;
 use App\Models\Registration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -65,17 +66,13 @@ class ResendCredentialsTest extends TestCase
         $member->password = bcrypt($newPassword);
         $member->save();
 
-        $mailData = ['record' => $member, 'password' => $newPassword];
-        Mail::to($member->email)->send(new MembershipCardMail($mailData));
+        Mail::to($member->email)->send(new ResendCredentialsMail($member, $newPassword));
 
         // Verify email was sent
-        Mail::assertSent(MembershipCardMail::class, function ($mail) use ($member, $newPassword) {
-            $data = $mail->content()->with;
-            
+        Mail::assertSent(ResendCredentialsMail::class, function ($mail) use ($member, $newPassword) {
             return $mail->hasTo($member->email)
-                && isset($data['password'])
-                && $data['password'] === $newPassword
-                && $data['record']->id === $member->id;
+                && $mail->password === $newPassword
+                && $mail->record->id === $member->id;
         });
     }
 
@@ -94,17 +91,14 @@ class ResendCredentialsTest extends TestCase
         ]);
 
         $newPassword = 'NOK789Xy!';
-        $mailData = ['record' => $member, 'password' => $newPassword];
         
-        Mail::to($member->email)->send(new MembershipCardMail($mailData));
+        Mail::to($member->email)->send(new ResendCredentialsMail($member, $newPassword));
 
-        Mail::assertSent(MembershipCardMail::class, function ($mail) use ($member, $newPassword) {
-            $data = $mail->content()->with;
-            
-            return $data['record']->email === $member->email
-                && $data['record']->civil_id === $member->civil_id
-                && $data['record']->memberName === $member->memberName
-                && $data['password'] === $newPassword;
+        Mail::assertSent(ResendCredentialsMail::class, function ($mail) use ($member, $newPassword) {
+            return $mail->record->email === $member->email
+                && $mail->record->civil_id === $member->civil_id
+                && $mail->record->memberName === $member->memberName
+                && $mail->password === $newPassword;
         });
     }
 
@@ -212,7 +206,7 @@ class ResendCredentialsTest extends TestCase
     }
 
     /** @test */
-    public function resend_credentials_sends_email_with_membership_card_attachment()
+    public function resend_credentials_email_has_correct_subject()
     {
         Mail::fake();
 
@@ -224,13 +218,14 @@ class ResendCredentialsTest extends TestCase
         ]);
 
         $newPassword = 'NOK555Mm!';
-        $mailData = ['record' => $member, 'password' => $newPassword];
         
-        Mail::to($member->email)->send(new MembershipCardMail($mailData));
+        Mail::to($member->email)->send(new ResendCredentialsMail($member, $newPassword));
 
-        Mail::assertSent(MembershipCardMail::class, function ($mail) {
-            // Verify the email has attachments method (PDF attachment)
-            return method_exists($mail, 'attachments');
+        Mail::assertSent(ResendCredentialsMail::class, function ($mail) {
+            // Verify the email subject is about password reset, not renewal
+            $envelope = $mail->envelope();
+            return str_contains($envelope->subject, 'Password Reset')
+                || str_contains($envelope->subject, 'Login Credentials');
         });
     }
 
@@ -257,7 +252,7 @@ class ResendCredentialsTest extends TestCase
     }
 
     /** @test */
-    public function resend_credentials_email_includes_download_link()
+    public function resend_credentials_email_includes_login_url()
     {
         Mail::fake();
 
@@ -269,16 +264,15 @@ class ResendCredentialsTest extends TestCase
         ]);
 
         $newPassword = 'NOK777Nn!';
-        $mailData = ['record' => $member, 'password' => $newPassword];
         
-        Mail::to($member->email)->send(new MembershipCardMail($mailData));
+        Mail::to($member->email)->send(new ResendCredentialsMail($member, $newPassword));
 
-        Mail::assertSent(MembershipCardMail::class, function ($mail) use ($member) {
+        Mail::assertSent(ResendCredentialsMail::class, function ($mail) {
             $data = $mail->content()->with;
             
-            return isset($data['downloadLink'])
-                && !empty($data['downloadLink'])
-                && str_contains($data['downloadLink'], (string) $member->id);
+            return isset($data['loginUrl'])
+                && !empty($data['loginUrl'])
+                && str_contains($data['loginUrl'], '/member/panel/login');
         });
     }
 }
