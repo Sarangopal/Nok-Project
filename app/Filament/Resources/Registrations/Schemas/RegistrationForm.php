@@ -15,7 +15,12 @@ class RegistrationForm
         return $schema
             ->components([
                 TextInput::make('member_type'),
-                TextInput::make('nok_id'),
+                TextInput::make('nok_id')
+                ->unique(table: 'registrations', column: 'nok_id', ignoreRecord: true)
+                ->validationMessages([
+                    'unique' => '⚠️ This NOK ID is already registered in the system.',
+                ])
+                ->helperText('Must be unique - will check for duplicates'),
                 DatePicker::make('doj'),
                 TextInput::make('memberName')
                     ->required(),
