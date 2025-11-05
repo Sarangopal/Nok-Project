@@ -10,11 +10,13 @@ This is a friendly reminder that your NOK membership card will expire soon.
 <x-mail::panel>
 ### ⚠️ Expiry Information
 
-- **Valid Until:** {{ $card_valid_until }}
+- **Valid Until:** {{ $validUntil }}
 @if($daysLeft > 0)
 - **Days Remaining:** {{ $daysLeft }} days
+@elseif($daysLeft == 0)
+- **Status:** ⚠️ Your membership expires TODAY
 @else
-- **Status:** ⚠️ Your membership has expired today
+- **Status:** ⚠️ Your membership has EXPIRED
 @endif
 </x-mail::panel>
 

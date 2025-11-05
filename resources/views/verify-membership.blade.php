@@ -31,10 +31,10 @@
                                 <input type="text" name="civil_id" id="civil_id" value="{{ old('civil_id', $prefillCivilId ?? '') }}" placeholder="Enter Civil ID or NOK ID (e.g., NOK001002)" class="form-control" style="padding:12px;border:1px solid #ddd;border-radius:6px;" required>
                                 <small class="text-muted">You can enter either your Civil ID or your NOK membership ID</small>
                             </div>
-                            <div class="mb-3">
+                            {{-- <div class="mb-3">
                                 <label for="email" style="font-weight:600;margin-bottom:6px;color:#333;">Email (Optional - for double verification)</label>
                                 <input type="email" name="email" id="email" value="{{ old('email') }}" placeholder="Enter email address" class="form-control" style="padding:12px;border:1px solid #ddd;border-radius:6px;">
-                            </div>
+                            </div> --}}
                             <button type="submit" class="vs-btn style5" style="width:100%;">Verify Membership</button>
                         </form>
 

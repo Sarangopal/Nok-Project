@@ -19,6 +19,19 @@
 <section>
     <div class="vs-carousel hero-layout1" data-slide-show="1" data-fade="true" data-arrows="true" data-autoplay="true" data-autoplay-speed="3000">
 
+         <div>
+            <div class="hero-inner">
+                <div class="hero-shape1"></div>
+                <div class="hero-bg" data-bg-src="{{ asset('nokw/assets/img/hero/slider-3.jpg') }}"></div>
+                <div class="hero-dark-overlay"></div>
+                <div class="container">
+                    <div class="hero-content">
+                      
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div>
             <div class="hero-inner">
                 <div class="hero-shape1"></div>

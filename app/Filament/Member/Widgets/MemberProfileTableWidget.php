@@ -72,6 +72,7 @@ class MemberProfileTableWidget extends BaseTableWidget
 
                 BadgeColumn::make('status')
                     ->label('Status')
+                    ->hidden()
                     ->getStateUsing(function ($record) {
                         // Prioritize renewal_status if there's a pending renewal request
                         if ($record->renewal_requested_at && $record->renewal_status) {
