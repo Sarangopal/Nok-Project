@@ -138,6 +138,9 @@ Route::get('/registration', function () {
     return view('registeration');
 });
 
+// Temporary test route for email debugging (REMOVE IN PRODUCTION)
+require __DIR__.'/test-email.php';
+
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });

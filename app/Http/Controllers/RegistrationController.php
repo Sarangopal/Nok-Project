@@ -183,8 +183,11 @@ class RegistrationController extends Controller
                 Mail::to($created->email)->send(new RegistrationConfirmationMail([
                     'memberName' => $created->memberName,
                 ]));
+                \Log::info("Registration confirmation email sent successfully to: {$created->email}");
             } catch (\Throwable $e) {
-                // ignore mail failure
+                // Log the error but don't fail the registration
+                \Log::error("Failed to send registration confirmation email to {$created->email}: " . $e->getMessage());
+                \Log::error("Stack trace: " . $e->getTraceAsString());
             }
 
             return response()->json([

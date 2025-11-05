@@ -22,7 +22,7 @@ class MemberDashboard extends BaseDashboard
         return [
             \App\Filament\Member\Widgets\MemberStatsWidget::class,
             \App\Filament\Member\Widgets\MemberProfileTableWidget::class,
-            \App\Filament\Member\Widgets\RenewalRequestWidget::class,  // Re-enabled for renewal testing
+            // \App\Filament\Member\Widgets\RenewalRequestWidget::class,  // Re-enabled for renewal testing
             \App\Filament\Member\Widgets\MemberCardWidget::class,
             // \App\Filament\Member\Widgets\MemberOffersListWidget::class,  // Hidden per request
         ];
