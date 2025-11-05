@@ -1,543 +1,372 @@
-# 📋 Manual Testing Checklist - Complete Renewal Flow
-
-## ✅ Pre-Testing Setup
-
-### 1. Ensure Email Configuration is Working
-```bash
-# Check .env file
-MAIL_MAILER=smtp
-MAIL_HOST=your_smtp_host
-MAIL_PORT=587
-MAIL_USERNAME=your_email
-MAIL_PASSWORD=your_password
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=noreply@nokkuwait.org
-MAIL_FROM_NAME="NOK Kuwait"
-```
-
-### 2. Check Cron Job is Set Up (for automatic reminders)
-```bash
-# On server, add to crontab:
-* * * * * cd /path/to/project && php artisan schedule:run >> /dev/null 2>&1
-```
-
-### 3. Clear Cache
-```bash
-php artisan config:clear
-php artisan cache:clear
-php artisan view:clear
-```
+# 🧪 MANUAL TESTING CHECKLIST
+**Project:** NOK Kuwait Admin Panel  
+**Date:** {{ date('Y-m-d') }}
 
 ---
 
-## 🧪 PART 1: Admin Panel Testing
+## 🔐 A. ADMIN PANEL TESTING
 
-### Test 1: Login to Admin Panel
-- [ ] Navigate to: `http://127.0.0.1:8000/admin/login`
-- [ ] Login credentials:
-  - Email: `admin@example.com`
-  - Password: (your admin password)
-- [ ] ✅ Successful login redirects to admin dashboard
+### 1. Authentication
+- [ ] **Login Test**
+  - Go to: `http://127.0.0.1:8000/admin/login`
+  - Email: `admin@gmail.com`
+  - Password: `secret`
+  - ✅ Should login successfully
+  - ✅ Should redirect to dashboard
 
----
+- [ ] **Logout Test**
+  - Click logout button
+  - ✅ Should redirect to login page
+  - ✅ Should clear session
 
-### Test 2: Approve New Registration
-
-**Steps:**
-1. [ ] Go to: `/admin/registrations`
-2. [ ] Find a pending registration
-3. [ ] Click "Approve" button
-4. [ ] Confirm approval in modal
-
-**Verify:**
-- [ ] ✅ Status changes to "approved"
-- [ ] ✅ `card_issued_at` is set to current date
-- [ ] ✅ `card_valid_until` is set to December 31 of current year
-- [ ] ✅ Email sent to member with membership card
-- [ ] ✅ Success notification appears
-
-**Database Check:**
-```sql
-SELECT 
-    memberName, 
-    login_status, 
-    card_issued_at, 
-    card_valid_until 
-FROM registrations 
-WHERE id = [member_id];
-```
-
-Expected:
-- `login_status`: "approved"
-- `card_valid_until`: "2025-12-31" (if approved in 2025)
+- [ ] **Invalid Credentials**
+  - Try wrong password
+  - ✅ Should show error message
+  - ✅ Should not login
 
 ---
 
-### Test 3: View Renewal Requests
+### 2. Dashboard
+- [ ] **Load Dashboard**
+  - After login, dashboard should load
+  - ✅ No console errors (F12 → Console)
+  - ✅ All widgets load correctly
+  - ✅ No broken images
+  - ✅ Load time < 2 seconds
 
-**Steps:**
-1. [ ] Go to: `/admin/renewal-requests`
-2. [ ] Should see list of members who requested renewal
-3. [ ] Check columns:
-   - [ ] Member Name
-   - [ ] Email
-   - [ ] Current Expiry Date
-   - [ ] Renewal Status (pending/approved)
-   - [ ] Payment Proof (if uploaded)
-
----
-
-### Test 4: Approve Renewal Request (Same Year)
-
-**Setup:**
-- Current Date: December 15, 2025
-- Member's current expiry: December 31, 2025
-
-**Steps:**
-1. [ ] Go to: `/admin/renewal-requests`
-2. [ ] Find pending renewal request
-3. [ ] Click "Approve Renewal" button
-4. [ ] Read modal message: "This will extend membership validity to end of current year: Dec 31, 2025"
-5. [ ] Click "Confirm"
-
-**Verify:**
-- [ ] ✅ `renewal_status` changes to "approved"
-- [ ] ✅ `last_renewed_at` is set to current timestamp
-- [ ] ✅ `renewal_count` incremented by 1
-- [ ] ✅ `card_valid_until` updated to "2025-12-31" (same year!)
-- [ ] ✅ Email sent with updated membership card
-- [ ] ✅ Success notification: "Renewal approved and card sent to member email"
-
-**Important Note:**
-> If renewal is approved in SAME YEAR (e.g., Dec 15, 2025), the card still expires Dec 31, 2025.
-> Member must renew again in 2026 for year 2026!
-
-**Database Check:**
-```sql
-SELECT 
-    memberName,
-    renewal_status,
-    card_valid_until,
-    last_renewed_at,
-    renewal_count
-FROM registrations 
-WHERE id = [member_id];
-```
-
-Expected:
-- `renewal_status`: "approved"
-- `card_valid_until`: "2025-12-31 00:00:00"
-- `renewal_count`: incremented
+- [ ] **Navigation Menu**
+  - ✅ All menu items visible
+  - ✅ Badge counts show correctly
+  - ✅ Clicking items navigates correctly
 
 ---
 
-### Test 5: Approve Renewal Request (New Year)
+### 3. New Registrations (`/admin/registrations`)
 
-**Setup:**
-- Current Date: January 10, 2026
-- Member's current expiry: December 31, 2025 (EXPIRED)
+#### Create New Registration
+- [ ] **Open Create Form**
+  - Click "New registration" button
+  - Go to: `http://127.0.0.1:8000/admin/registrations/create`
 
-**Steps:**
-1. [ ] Go to: `/admin/renewal-requests`
-2. [ ] Find pending renewal request from expired member
-3. [ ] Click "Approve Renewal"
-4. [ ] Read modal: "This will extend membership validity to end of current year: Dec 31, 2026"
-5. [ ] Click "Confirm"
+- [ ] **Fill Required Fields**
+  - Member Name: `Test User`
+  - Age: `25`
+  - Gender: `M`
+  - Email: `test@example.com`
+  - Mobile: `50123456`
+  - Civil ID: `123456789012`
 
-**Verify:**
-- [ ] ✅ `card_valid_until` updated to "2026-12-31" (NEW year!)
-- [ ] ✅ `renewal_count` incremented
-- [ ] ✅ Email sent with updated card
-- [ ] ✅ Member can now access member panel
+- [ ] **Test Duplicate Validation**
+  - Try existing email: `test1day@example.com`
+  - ✅ Should show error: "⚠️ This email is already registered"
+  - Try existing Civil ID: `644582148057`
+  - ✅ Should show error: "⚠️ This Civil ID is already registered"
+  - Try existing Mobile
+  - ✅ Should show error: "⚠️ This mobile number is already registered"
 
-**Database Check:**
-```sql
-SELECT 
-    memberName,
-    card_valid_until,
-    renewal_count
-FROM registrations 
-WHERE id = [member_id];
-```
+- [ ] **Submit Valid Form**
+  - Fill all fields with NEW data
+  - Click "Create"
+  - ✅ Should create successfully
+  - ✅ Should redirect to list page
 
-Expected:
-- `card_valid_until`: "2026-12-31 00:00:00"
+#### List Registrations
+- [ ] **View List**
+  - Go to: `http://127.0.0.1:8000/admin/registrations`
+  - ✅ Table loads correctly
+  - ✅ Pagination works
+  - ✅ Search works (try searching by name/email)
 
----
+- [ ] **Filters**
+  - Apply "Pending" filter
+  - ✅ Should show only pending registrations
+  - Apply "Approved" filter
+  - ✅ Should show only approved
 
-### Test 6: Check Renewal Reminders Log
+#### Actions
+- [ ] **Approve Registration**
+  - Find pending registration
+  - Click "Approve" button
+  - ✅ Should approve successfully
+  - ✅ Should send email
+  - ✅ Status changes to "Approved"
 
-**Steps:**
-1. [ ] Go to: `/admin/reminder-emails` (if resource exists)
-2. [ ] View sent renewal reminders
+- [ ] **Resend Credentials**
+  - Find approved member
+  - Click "Resend Credentials"
+  - ✅ Should generate new password
+  - ✅ Should send email with credentials
+  - ✅ Email subject: "Password Reset - Login Credentials Updated"
 
-Or check database:
-```sql
-SELECT * FROM renewal_reminders 
-ORDER BY created_at DESC 
-LIMIT 20;
-```
+- [ ] **Reset Password**
+  - Click "Reset Password"
+  - ✅ Should generate new password
+  - ✅ Should send email
 
-**Verify:**
-- [ ] Reminders sent at correct intervals (30, 15, 7, 1, 0 days)
-- [ ] No duplicate reminders for same member/date
-- [ ] Status shows "sent" or "failed"
+- [ ] **Edit Registration**
+  - Click "Edit" button
+  - Change some fields
+  - ✅ Should save successfully
+  - ✅ Validation still works on edit
 
----
-
-## 🧪 PART 2: Member Panel Testing
-
-### Test 7: Member Login
-
-**Steps:**
-1. [ ] Navigate to: `http://127.0.0.1:8000/member/panel/login`
-2. [ ] Login with:
-   - Email: (approved member email)
-   - Password: (member password, e.g., "NOK1234")
-3. [ ] ✅ Successful login redirects to member dashboard
-
----
-
-### Test 8: View Member Dashboard
-
-**Steps:**
-1. [ ] After login, view dashboard
-2. [ ] Check displayed information:
-   - [ ] Member name
-   - [ ] NOK ID
-   - [ ] Card expiry date
-   - [ ] Days remaining (if not expired)
-   - [ ] Renewal button visibility
-
-**Verify Display:**
-- If card NOT expired:
-  - [ ] Shows "Valid until: Dec 31, 2025"
-  - [ ] Shows days remaining
-  - [ ] "Request Renewal" button may be visible (if within 30 days)
-  
-- If card EXPIRED:
-  - [ ] Shows "Expired" status
-  - [ ] "Request Renewal" button visible and prominent
+- [ ] **Delete Registration**
+  - Click "Delete" button
+  - Confirm deletion
+  - ✅ Should delete successfully
 
 ---
 
-### Test 9: Request Renewal (Member Action)
+### 4. Renewals (`/admin/renewals`)
 
-**Steps:**
-1. [ ] On member dashboard, locate "Request Renewal" button
-2. [ ] Click the button
-3. [ ] Fill renewal form (if any):
-   - [ ] Upload payment proof (if required)
-4. [ ] Click "Submit Renewal Request"
+- [ ] **View Renewals List**
+  - Go to: `http://127.0.0.1:8000/admin/renewals`
+  - ✅ "New Renewal" button is HIDDEN
+  - ✅ Member type badges show:
+    - Green for "new"
+    - Blue for "existing"
+  - ✅ Table loads correctly
+  - ✅ Pagination works
 
-**Verify:**
-- [ ] ✅ Success message appears
-- [ ] ✅ Button changes to "Renewal Pending" or disabled
-- [ ] ✅ `renewal_requested_at` timestamp set in database
-- [ ] ✅ `renewal_status` set to "pending"
+- [ ] **View Action**
+  - Click "View" button
+  - ✅ Opens modal/form
+  - ✅ Shows member details correctly
 
-**Database Check:**
-```sql
-SELECT 
-    memberName,
-    renewal_status,
-    renewal_requested_at
-FROM registrations 
-WHERE id = [member_id];
-```
-
-Expected:
-- `renewal_status`: "pending"
-- `renewal_requested_at`: current timestamp
+- [ ] **Edit Action**
+  - Click "Edit" button
+  - ✅ Opens edit form
+  - ✅ Saves changes correctly
 
 ---
 
-### Test 10: Test Renewal Button (Admin Test Feature)
+### 5. Renewal Requests (`/admin/renewal-requests`)
 
-**Steps:**
-1. [ ] On member dashboard, find "Test Renewal" button (if exists for testing)
-2. [ ] Click it
-3. [ ] Verify it works same as regular renewal button
+- [ ] **View List**
+  - Go to: `http://127.0.0.1:8000/admin/renewal-requests`
+  - ✅ Badge count shows correctly
+  - ✅ Table loads correctly
 
----
+- [ ] **View Details Modal**
+  - Click "View" button
+  - ✅ Modal opens
+  - ✅ **Payment Proof Image:**
+    - ✅ Image displays correctly
+    - ✅ If missing, shows helpful error message
+    - ✅ "View Full Size" button works
+    - ✅ "Download Image" button works
+  - ✅ **Member Details:**
+    - ✅ Shows all updated details
+    - ✅ Proper styling (green gradient section)
+  - ✅ **Request Info:**
+    - ✅ Shows NOK ID, Civil ID, dates
+    - ✅ Status badge shows correctly
 
-## 🧪 PART 3: Email Testing
-
-### Test 11: New Registration Approval Email
-
-**Trigger:**
-- Admin approves new registration
-
-**Verify Email:**
-- [ ] ✅ Sent to member email
-- [ ] ✅ Subject: "Membership Card" or similar
-- [ ] ✅ Contains:
-  - [ ] Member name
-  - [ ] NOK ID
-  - [ ] Card issue date
-  - [ ] Card expiry date (Dec 31, YYYY)
-  - [ ] Login credentials (password)
-  - [ ] QR code or download link
-  - [ ] Member panel login link
-
-**Check Email Content:**
-```blade
-Card Valid Until: December 31, 2025
-```
+- [ ] **Approve Renewal**
+  - Click "Approve Renewal" button
+  - ✅ Confirms before approval
+  - ✅ Approves successfully
+  - ✅ Extends card validity
+  - ✅ Sends email
+  - ✅ Removes from pending list
 
 ---
 
-### Test 12: Renewal Approval Email
+### 6. Events (`/admin/events`)
 
-**Trigger:**
-- Admin approves renewal request
+- [ ] **Create Event**
+  - Click "New event"
+  - Fill form:
+    - Title: `Test Event`
+    - Event Date: Select future date
+    - Display Order: `1`
+  - ✅ Should create successfully
 
-**Verify Email:**
-- [ ] ✅ Sent to member email
-- [ ] ✅ Subject: "Membership Renewal Approved" or similar
-- [ ] ✅ Contains:
-  - [ ] Updated expiry date
-  - [ ] Renewal confirmation message
-  - [ ] Download link for updated card
-  - [ ] QR code updated
+- [ ] **Test Duplicate Display Order**
+  - Try to set Display Order = `1` (already exists)
+  - ✅ Should show error: "This order number is already in use"
+  - ✅ Form won't submit
 
-**Important Check:**
-> The expiry date in email MUST match `card_valid_until` in database!
+- [ ] **List Events**
+  - ✅ Events sorted by display_order
+  - ✅ Events appear on homepage correctly
 
----
-
-### Test 13: Renewal Reminder Email (Automatic)
-
-**Trigger:**
-- Cron job runs daily at 8:00 AM
-- Or manually: `php artisan members:send-renewal-reminders`
-
-**Verify Email:**
-- [ ] ✅ Sent to members expiring in 30, 15, 7, 1, 0 days
-- [ ] ✅ Subject: "Membership Renewal Reminder"
-- [ ] ✅ Contains:
-  - [ ] Member name
-  - [ ] Current expiry date
-  - [ ] Days remaining (30, 15, 7, 1, or "expired")
-  - [ ] Link to request renewal
-  - [ ] Instructions
-
-**Manual Test:**
-```bash
-php artisan members:send-renewal-reminders
-```
+- [ ] **Edit Event**
+  - Change display_order
+  - ✅ Should save correctly
+  - ✅ Should reflect on homepage
 
 ---
 
-## 🧪 PART 4: Database Verification
+### 7. Gallery (`/admin/gallery`)
 
-### Test 14: Verify card_valid_until Updates
+- [ ] **Upload Image**
+  - Click "New gallery"
+  - Upload image
+  - ✅ Image uploads successfully
+  - ✅ Image displays in list
 
-**Test Case 1: Same Year Renewal**
-```sql
--- Setup: Member with expiry 2025-12-31, renewed on 2025-12-15
-SELECT 
-    memberName,
-    DATE(card_valid_until) as expiry_date,
-    renewal_count
-FROM registrations 
-WHERE memberName = 'Test Member';
-```
-
-Expected: `expiry_date` = "2025-12-31" (same year)
-
-**Test Case 2: New Year Renewal**
-```sql
--- Setup: Member with expiry 2025-12-31, renewed on 2026-01-10
-SELECT 
-    memberName,
-    DATE(card_valid_until) as expiry_date,
-    renewal_count
-FROM registrations 
-WHERE memberName = 'Test Member';
-```
-
-Expected: `expiry_date` = "2026-12-31" (new year)
+- [ ] **View Gallery**
+  - ✅ Images display correctly
+  - ✅ Categories work
+  - ✅ Pagination works
 
 ---
 
-### Test 15: Verify All Members Expire on Dec 31
+## 👤 B. MEMBER PANEL TESTING
 
-```sql
-SELECT 
-    memberName,
-    DATE(card_issued_at) as joined_date,
-    DATE(card_valid_until) as expiry_date,
-    MONTH(card_valid_until) as expiry_month,
-    DAY(card_valid_until) as expiry_day
-FROM registrations 
-WHERE login_status = 'approved' OR renewal_status = 'approved'
-ORDER BY card_issued_at;
-```
+### 1. Member Login
+- [ ] **Login Test**
+  - Go to: `http://127.0.0.1:8000/member/panel/login`
+  - Email: Use member email from credentials
+  - Password: Use password from credentials email
+  - ✅ Should login successfully
 
-**Verify:**
-- [ ] ✅ ALL members have `expiry_month` = 12
-- [ ] ✅ ALL members have `expiry_day` = 31
-- [ ] ✅ Expiry year matches their last renewal year
+- [ ] **Invalid Login**
+  - Try wrong credentials
+  - ✅ Should show error
+  - ✅ Should not login
 
 ---
 
-## 🧪 PART 5: Multi-Year Testing Scenario
+### 2. Member Dashboard
+- [ ] **Load Dashboard**
+  - ✅ Dashboard loads correctly
+  - ✅ Shows membership card
+  - ✅ Shows expiry date
+  - ✅ No console errors
 
-### Test 16: Complete Member Journey (2025-2027)
+- [ ] **Membership Card**
+  - ✅ Download PDF button works
+  - ✅ Card displays correctly
 
-**Year 2025:**
-1. [ ] Member joins: Jan 15, 2025
-2. [ ] Admin approves: Jan 20, 2025
-3. [ ] Verify: `card_valid_until` = 2025-12-31
-4. [ ] Dec 1, 2025: Renewal reminder sent
-5. [ ] Dec 15, 2025: Member requests renewal
-6. [ ] Dec 20, 2025: Admin approves
-7. [ ] Verify: `card_valid_until` = 2025-12-31 (still same year!)
-
-**Year 2026:**
-8. [ ] Jan 5, 2026: Member requests renewal (card expired)
-9. [ ] Jan 10, 2026: Admin approves
-10. [ ] Verify: `card_valid_until` = 2026-12-31 ✅
-11. [ ] Dec 1, 2026: Renewal reminder sent
-12. [ ] Dec 10, 2026: Member requests renewal
-13. [ ] Dec 15, 2026: Admin approves
-14. [ ] Verify: `card_valid_until` = 2026-12-31 (still same year!)
-
-**Year 2027:**
-15. [ ] Jan 3, 2027: Member requests renewal
-16. [ ] Jan 5, 2027: Admin approves
-17. [ ] Verify: `card_valid_until` = 2027-12-31 ✅
-
-**Final Verification:**
-- [ ] `renewal_count` = 4 (or appropriate number)
-- [ ] All emails sent correctly
-- [ ] Database records accurate
-- [ ] Member can access panel
+- [ ] **Renewal Request**
+  - If card expired/expiring:
+    - ✅ "Request Renewal" button shows
+    - ✅ Clicking opens renewal form
+    - ✅ Can upload payment proof
+    - ✅ Can submit request
 
 ---
 
-## 🧪 PART 6: Edge Cases
+## 🌐 C. FRONTEND TESTING
 
-### Test 17: Renewal on December 31, 2025
+### 1. Homepage (`/`)
+- [ ] **Load Page**
+  - ✅ Page loads without errors
+  - ✅ No console errors
+  - ✅ Images load correctly
 
-**Scenario:**
-- Current: Dec 31, 2025, 11:00 PM
-- Member: Expires Dec 31, 2025
-- Action: Request renewal
+- [ ] **Events Carousel**
+  - ✅ Events display correctly
+  - ✅ Ordering works (display_order)
+  - ✅ First event shows first
+  - ✅ Carousel navigation works
 
-**Steps:**
-1. [ ] Set date to Dec 31, 2025, 23:00
-2. [ ] Member requests renewal
-3. [ ] Admin approves same day
-4. [ ] Verify: `card_valid_until` = 2025-12-31 (same day!)
-5. [ ] Next day (Jan 1, 2026): Member requests again
-6. [ ] Admin approves
-7. [ ] Verify: `card_valid_until` = 2026-12-31 ✅
-
----
-
-### Test 18: Multiple Renewals Same Day
-
-**Scenario:**
-- Multiple members request renewal same day
-
-**Steps:**
-1. [ ] Create 5 test members
-2. [ ] All request renewal on same day
-3. [ ] Admin approves all
-4. [ ] Verify: All have same `card_valid_until` (Dec 31 of year)
+- [ ] **Navigation**
+  - ✅ All links work
+  - ✅ Navigation menu works
 
 ---
 
-## 📊 Final Verification Checklist
+### 2. Events Page (`/events`)
+- [ ] **List Events**
+  - ✅ Events display correctly
+  - ✅ Pagination works
+  - ✅ Search works
 
-### Database State
-- [ ] All approved members have `card_valid_until` = "YYYY-12-31"
-- [ ] `renewal_count` increments correctly
-- [ ] `last_renewed_at` timestamps accurate
-- [ ] No null `card_valid_until` for approved members
-
-### Email Functionality
-- [ ] New registration emails sent
-- [ ] Renewal approval emails sent
-- [ ] Renewal reminder emails sent (automatic)
-- [ ] All emails contain correct expiry dates
-- [ ] Email content matches database
-
-### UI/UX
-- [ ] Admin panel shows correct dates
-- [ ] Member dashboard shows correct dates
-- [ ] Renewal buttons work
-- [ ] Status badges display correctly
-- [ ] Notifications appear
-
-### Calendar Year System
-- [ ] All cards expire Dec 31 (calendar year)
-- [ ] Same-year renewals keep same year-end
-- [ ] New-year renewals extend to new year-end
-- [ ] Multi-year journey works correctly
+- [ ] **Event Detail**
+  - ✅ Click event opens detail page
+  - ✅ Shows full event information
 
 ---
 
-## 🎯 Success Criteria
+## ⚡ D. PERFORMANCE TESTING
 
-All tests must pass:
-- ✅ card_valid_until updates correctly on approval
-- ✅ Emails sent with correct expiry dates
-- ✅ Database values accurate
-- ✅ Calendar year validity enforced (Dec 31)
-- ✅ Multi-year renewals work
-- ✅ Member panel renewal works
-- ✅ Admin approval flow works
-- ✅ Automatic reminders sent
+### 1. Load Times
+- [ ] **Admin Dashboard**
+  - Open browser DevTools (F12)
+  - Go to Network tab
+  - Load dashboard
+  - ✅ Load time < 2 seconds
+  - ✅ No failed requests
+
+- [ ] **Filament Tables**
+  - Load any list page
+  - ✅ Loads quickly
+  - ✅ No lag when scrolling
+  - ✅ Pagination loads fast
+
+### 2. Console Errors
+- [ ] **Check Console**
+  - Open DevTools (F12)
+  - Go to Console tab
+  - Navigate through pages
+  - ✅ No red errors
+  - ✅ No warnings (or minimal warnings)
 
 ---
 
-## 📝 Test Results Log
+## 🔒 E. SECURITY TESTING
 
-**Date Tested:** _________________
+### 1. CSRF Protection
+- [ ] **Form Submission**
+  - Try submitting form without CSRF token
+  - ✅ Should be rejected
 
-**Tester:** _________________
+### 2. Authentication
+- [ ] **Protected Routes**
+  - Try accessing `/admin/registrations` without login
+  - ✅ Should redirect to login
 
-**Results:**
-- [ ] All tests passed
-- [ ] Some tests failed (list below)
-- [ ] Requires fixes
+- [ ] **Member Routes**
+  - Try accessing `/member/panel` without login
+  - ✅ Should redirect to login
+
+### 3. File Uploads
+- [ ] **Invalid Files**
+  - Try uploading .exe file
+  - ✅ Should be rejected
+  - ✅ Shows validation error
+
+---
+
+## 📊 F. TEST RESULTS SUMMARY
+
+### Admin Panel
+- ✅ **Passed:** [Fill in]
+- ❌ **Failed:** [Fill in]
+- ⚠️ **Warnings:** [Fill in]
+
+### Member Panel
+- ✅ **Passed:** [Fill in]
+- ❌ **Failed:** [Fill in]
+- ⚠️ **Warnings:** [Fill in]
+
+### Frontend
+- ✅ **Passed:** [Fill in]
+- ❌ **Failed:** [Fill in]
+- ⚠️ **Warnings:** [Fill in]
+
+### Performance
+- ✅ **Load Times:** [Fill in]
+- ❌ **Slow Pages:** [Fill in]
+- ⚠️ **Console Errors:** [Fill in]
+
+---
+
+## 📝 NOTES
 
 **Issues Found:**
-1. 
-2. 
-3. 
+1. [Describe any issues]
+2. [Describe any issues]
 
-**Notes:**
+**Screenshots:**
+- [Attach screenshots of any errors]
 
+**Browser Used:**
+- [Chrome/Firefox/Safari] Version: [Version]
 
 ---
 
-## 🛠️ Automated Tests
-
-Run all automated tests:
-```bash
-# Complete end-to-end test
-php artisan test tests/Feature/CompleteRenewalFlowEndToEndTest.php
-
-# Calendar year validity tests
-php artisan test tests/Unit/CalendarYearValidityTest.php
-
-# Renewal approval tests
-php artisan test tests/Feature/RenewalApprovalUpdatesValidityTest.php
-
-# All renewal tests
-php artisan test --filter=Renewal
-
-# All tests
-php artisan test
-```
-
-**All automated tests should pass before manual testing!**
-
-
-
-
-
+**Tested By:** [Your Name]  
+**Date:** {{ date('Y-m-d H:i:s') }}

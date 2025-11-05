@@ -26,7 +26,6 @@ class Registration extends Model
         'card_issued_at' => 'datetime',
         'last_renewed_at' => 'datetime',
         'card_valid_until' => 'datetime',
-        'card_issued_at' => 'datetime',
     ];
     // Accessor to check if renewal is due (1 year after Date of Joining)
     public function getIsRenewalDueAttribute(): bool

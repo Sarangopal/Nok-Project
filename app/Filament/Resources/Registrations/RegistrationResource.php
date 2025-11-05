@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Filament\Tables;
+use Illuminate\Database\Eloquent\Builder;
 
 class RegistrationResource extends Resource
 {
@@ -56,5 +57,12 @@ class RegistrationResource extends Resource
             'create' => CreateRegistration::route('/create'),
             'edit' => EditRegistration::route('/{record}/edit'),
         ];
+    }
+
+    // Optimize queries by eager loading relationships
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with('offers'); // Eager load offers relationship to prevent N+1 queries
     }
 }

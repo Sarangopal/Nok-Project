@@ -30,13 +30,15 @@ class RenewalRequestResource extends Resource
     // Navigation sort order
     protected static ?int $navigationSort = 4;
 
-    // Show badge with pending renewal request count
+    // Show badge with pending renewal request count (cached for performance)
     public static function getNavigationBadge(): ?string
     {
-        $count = static::getModel()::whereNotNull('renewal_requested_at')
-            ->where('renewal_status', 'pending')
-            ->count();
-        return $count > 0 ? (string)$count : null;
+        return cache()->remember('renewal_requests_count', 60, function () {
+            $count = static::getModel()::whereNotNull('renewal_requested_at')
+                ->where('renewal_status', 'pending')
+                ->count();
+            return $count > 0 ? (string)$count : null;
+        });
     }
 
     public static function getNavigationBadgeColor(): ?string
